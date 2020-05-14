@@ -1,0 +1,19 @@
+---
+layout: post
+title:  "Some Simple PDEs Visualized Using Julia"
+date:   2020-05-13 21:00:00 -0700
+categories: julia pde
+mathjax: true
+---
+
+Lately I've been learning to work with differential equations in Julia.
+
+
+[](https://nextjournal.com/sosiris-diffeq/pde-2018)
+[](https://docs.sciml.ai/stable/index.html)
+![heat_equation_case_1]({{ '/assets/images/heat_equation_case_1.gif' | relative_url }})
+![heat_equation_case_2]({{ '/assets/images/heat_equation_case_2.gif' | relative_url }})
+![heat_equation_case_3]({{ '/assets/images/heat_equation_case_3.gif' | relative_url }})
+![wave_equation_case_1]({{ '/assets/images/wave_equation_case_1.gif' | relative_url }})
+![wave_equation_case_2]({{ '/assets/images/wave_equation_case_2.gif' | relative_url }})
+![wave_equation_case_2_nonstiff_solver]({{'/assets/images/wave_equation_case_2_nonstiff_solver.gif' | relative_url }})
