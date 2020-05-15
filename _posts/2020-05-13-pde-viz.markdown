@@ -12,7 +12,7 @@ One of the resources that inspired and helped me to write this is
 [Solving PDEs in Julia](https://nextjournal.com/sosiris-diffeq/pde-2018) by
 Chris Rackauckas, the lead dev on 
 [DifferentialEquations.jl](https://docs.sciml.ai/stable/index.html).
-I highly recommend you check out his JuliaCon talk, which goes a lot more into
+I highly recommend you check out his JuliaCon 2018 talk, which goes a lot more into
 depth on how to build a PDE solver out of components in 
 [DifferentialEquations.jl](https://docs.sciml.ai/stable/index.html)
 and other Julia libraries.
@@ -56,9 +56,10 @@ $$
   u(x, 0) = f(x) \qquad \forall x \in (0, L)
 $$
 
-Boundary conditions are  the temperature at the tends
+Boundary conditions are  the temperature at the ends,
+where $x = 0$ or $x = L$.
 Today we are only going to use Dirichlet boundary conditions,
-which means the boundary conditions don't change over time.
+which means the boundary conditions don't vary over time.
 
 $$
 \begin{align}
@@ -67,15 +68,26 @@ $$
 \end{align}
 $$
 
+The combination of the partial differential equation,
+initial condition, and boundary conditions is enough
+to determine the system.
+
 ### Why Use Julia for Differential Equations?
 Julia is a great programming language for scientific computing in general.
 For differential equations in particular, there are some great libraries, notably
-`DifferentialEquations.jl` which we used here.
-One downside to using Julia for differential equations is that some of these
-libraries still need some polishing. For instance, I found out in the course of
-working on this post that `DifferentialEquations.jl` doesn't support stiff
+`DifferentialEquations.jl` which we used to write this post.
+One downside to using Julia for differential equations is that some
+libraries still need some polishing,
+which is just a consequence of the Julia ecosystem not being mature yet.
+For instance, while
+working on this post
+I found out that `DifferentialEquations.jl` doesn't yet support stiff
 solvers for second order ODE problems.
-There's also some cool libraries that are used to support research into the
+I also think that it's a bit harder to debug Julia errors,
+but maybe that's because I don't have too much Julia experience.
+
+
+There's also some libraries that are used to support research into the
 combination of neural networks and
 differential equations, such as
 [NeuralNetDiffEq.jl](https://github.com/JuliaDiffEq/NeuralNetDiffEq.jl)
@@ -87,13 +99,22 @@ machine learning.
 
 
 ### Heat Equation
+The heat equation in 1D is most commonly used to model
+an insulated rod with the ends connected to a heat source
+or sink held at a constant temperature.
+In general though, the heat equation can be used to model
+how things diffuse. It can also be used to model how
+the probability density of a stochastic process(specifically a random walk)
+changes over time.
+
 The approach I used to solve the heat equation is the 
 [explicit method](https://en.wikipedia.org/wiki/Finite_difference_method#Explicit_method)
 of the Finite Difference Method(FDM). The idea is to solve the equation
 
 $$u_t = u_{xx}$$
 
-by solving for $u_t$ with the forward difference and $u_{xx}$ with central difference.
+by solving for $u_t$ with the forward difference over $t$
+and $u_{xx}$ with  the second order central difference over $x$.
 The equality can be rewritten as:
 
 $$
@@ -110,48 +131,186 @@ $$
 u_j^{n + 1} = u_j^n + \frac{\Delta t}{\Delta x^2} (u_{j + 1}^n - 2 u_j^n + u_{j - 1}^n)
 $$
 
+We can reformulate this recursive relation using matrix multiplication:
+
+$$
+\boldsymbol{u}^{n + 1} = \boldsymbol{u}^n + \frac{\Delta t}{\Delta x ^2 } \boldsymbol{A} \boldsymbol{u}^n + \boldsymbol{k}
+$$
+
+where $\boldsymbol{A}$ is a $ J \times J$ tridiagonal matrix
+when $J$ is the number of time steps $j$:
+
+$$
+\boldsymbol{A} =
+\begin{bmatrix}
+  -2 & 1      &        & 0  \\
+   1 & \ddots & \ddots &    \\
+     & \ddots & \ddots & 1  \\
+   0 &        & 1      & -2 \\
+\end{bmatrix}
+$$
+
+and the vector $\boldsymbol{k}$ accounts for the boundary conditions:
+
+$$
+\boldsymbol{k} = 
+\begin{bmatrix}
+K_1 \\
+0 \\
+\vdots \\
+K_2
+\end{bmatrix}
+$$
+
 #### Case 1
+The first case for the heat equation is
+analogous to a cold insulated rod with
+the ends connected to a constant heat source.
+At first only the ends will heat up,
+but soon the heat will diffuse evenly
+and approach a uniformly heated rod.
+
 $$
 \begin{align}
-& u_t = u_{xx} \\
-& u(0, t) = u(10, t) = 0 \qquad & t \gt 0 \\
-& u(x, 0) = 0 \qquad & x \in (0, 10)
+\qquad & u_t = u_{xx} \qquad & \forall x \in (0, 10),\: t \gt 0 \\
+\qquad & u(0, t) = u(10, t) = 0 \qquad & t \gt 0 \\
+\qquad & u(x, 0) = 0 \qquad & x \in (0, 10)
 \end{align}
 $$
 ![heat_equation_case_1]({{ '/assets/images/heat_equation_case_1.gif' | relative_url }})
 
 #### Case 2
+The second case is the opposite of the first case.
+This time an insulated rod at a uniform temperature
+is connected on the ends to two heat sinks.
+At first only the edges will cool significantly,
+but eventually the temperature in the rod will approach
+0 everywhere.
+
 $$
 \begin{align}
-& u_t = u_{xx} \\
-& u(0, t) = u(10, t) = 1 \qquad & t \gt 0 \\
-& u(x, 0) = 1 \qquad & x \in (0, 10)
+\qquad & u_t = u_{xx} \qquad & \forall x \in (0, 10),\: t \gt 0 \\
+\qquad & u(0, t) = u(10, t) = 1 \qquad & t \gt 0 \\
+\qquad & u(x, 0) = 1 \qquad & x \in (0, 10)
 \end{align}
 $$
 ![heat_equation_case_2]({{ '/assets/images/heat_equation_case_2.gif' |
 relative_url }})
 
 #### Case 3
+In this case we again have an insulated rod.
+The left end is a heat sink and the right end
+is a heat source, both held at the same temperature.
+The steady state of the rod occurs when the heat
+increases linearly moving from one end to the other.
+
 $$
 \begin{align}
-& u_t = u_{xx} \\
-& u(0, t) = 0,\: u(10, t) = 1 \qquad & t \gt 0 \\
-& u(x, 0) = 1 \qquad & x \in (0, 10)
+\qquad & u_t = u_{xx} \qquad & \forall x \in (0, 10),\: t \gt 0 \\
+\qquad & u(0, t) = 0,\: u(10, t) = 1 \qquad & t \gt 0 \\
+\qquad & u(x, 0) = 1 \qquad & x \in (0, 10)
 \end{align}
 $$
 ![heat_equation_case_3]({{ '/assets/images/heat_equation_case_3.gif' | relative_url }})
 
 
 ### Wave Equation
+The wave equation can be used to describe phenomena such as a vibrating string,
+ocean waves, and quantum mechanics.
+
+The general form of the wave equation is:
+
+$$
+u_{tt} = c^2 u_{xx}
+$$
+
+where $c^2$ usually determines something analagous to how quickly the wave
+propagates in space.
+
+I chose to solve the wave equation differently than the heat equation.
+Instead of calculating the forward difference in $t$, I chose instead
+to only apply FDM to the right side. Applying the forward difference here
+wouldn't work on the left side, since the left term is now a second order
+partial derivative of $u$.
+
+Calculating the right side is the same as before, using the second order central difference,
+but now we leave the left side as is:
+
+$$
+\frac{\partial^2 u_j}{\partial t^2} = \frac{u_{j + 1} - 2 u_j + u_{j - 1}}{\Delta x^2} \\
+\boldsymbol{u}_{tt} = \frac{1}{\Delta x^2} \boldsymbol{A} \boldsymbol{u} + \boldsymbol{k}
+$$
+
+where $\boldsymbol{A}$ and $\boldsymbol{k}$ are defined similarly as before. Now we just have to
+solve second order ODE in $t$, which we are able to do with `DifferentialEquations.jl`
+
 #### Case 1
+This first case is a standing sine wave. The ends are fixed, and the initial condition
+is a sine function.
+
+$$
+\begin{align}
+\qquad & u_{tt} = u_{xx} \qquad & \forall x \in (0, 10),\: t \gt 0 \\
+\qquad & u(0, t) = u(10, t) = 0 \qquad & \forall t \gt 0 \\
+\qquad & u(x, 0) = \sin (\frac{\pi x}{5}) \qquad & \forall x \in (0, 10) \\
+\qquad & u_x(x, 0) = 0 \qquad & \forall x \in (0, 10)
+\end{align}
+$$
+
 ![wave_equation_case_1]({{ '/assets/images/wave_equation_case_1.gif' | relative_url }})
 
 #### Case 2
+This one I pulled from a homework assignment. I'm not really sure
+what physical system this would correspond to.
+
+
+$$
+\begin{align}
+\qquad & u_{tt} = 4 u_{xx} \qquad & \forall x \in (0, 10),\: t \gt 0 \\
+\qquad & u(0, t) = u(10, t) = 0 \qquad & \forall t \gt 0 \\
+\qquad & u(x, 0) = x \qquad & \forall x \in (0, 10) \\
+\qquad & u_x(x, 0) = -x \qquad & \forall x \in (0, 10)
+\end{align}
+$$
+
+
 ![wave_equation_case_2]({{ '/assets/images/wave_equation_case_2.gif' | relative_url }})
 
+This problem illustrates something interesting that happens depending on which solver you use.
+I mentioned earlier that a bug in `DifferentialEquations.jl` was preventing me from
+using a stiff solver for 2nd order ODE problems. The following visualization illustrates
+what happens when you solve the 2nd order ODE corresponding to this problem with the
+default solver, which is a non-stiff solver:
 
 ![wave_equation_case_2_nonstiff_solver]({{'/assets/images/wave_equation_case_2_nonstiff_solver.gif' | relative_url }})
 
+I ran this ODE solver with the same parameters. Note it's a lot less smooth. In order to smooth out the solution,
+I converted my 2nd order ODE problem to a 1st order ODE.
+
+$$
+\boldsymbol{A}' \equiv
+\begin{bmatrix}
+\boldsymbol{0}_{J \times J} & \boldsymbol{I}_{J \times J} \\
+\boldsymbol{A} & \boldsymbol{0}_{J \times J}
+\end{bmatrix} \\
+
+\boldsymbol{u}' \equiv
+\begin{bmatrix}
+\boldsymbol{u} \\
+\boldsymbol{v}
+\end{bmatrix} \\
+
+\boldsymbol{k}' \equiv 
+\begin{bmatrix}
+\boldsymbol{k} \\
+\boldsymbol{0}
+\end{bmatrix}
+$$
+
+where $\boldsymbol{v} = \boldsymbol{u}_t$
+
+This is similar to how we convert a second order ODE into a system of two second order ODE.
+Now we are solving a first order system of $2 J$ variables.
 
 ### What's Next?
 There are a few things I want to try next:
@@ -161,7 +320,3 @@ There are a few things I want to try next:
 - Do a deeper study into the numerical analysis side of PDE solvers.
 - Look at other methods for solving PDEs with more complicated geometry, such as
   Finite Element Analysis.
-
-In the future I might do some reading on 
-[Mixing Differential Equations and Neural Networks for Physics-Informed Learning](https://mitmath.github.io/18337/lecture15/diffeq_machine_learning)
-and see if I can make a project out of it.
