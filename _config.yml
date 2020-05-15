@@ -16,7 +16,7 @@
 title: Data Science and Applied Math
 email: tdesilvaqihao@gmail.com
 description: >- # this means to ignore newlines until "baseurl:"
-  An assortment of posts by a data scientist and applied math masters student.
+  A blog by a data scientist pursuing an applied math MS.
 baseurl: "" # the subpath of your site, e.g. /blog
 url: "https://tqhdesilva.github.io" # the base hostname & protocol for your site, e.g. http://example.com
 twitter_username: tqhdesilva

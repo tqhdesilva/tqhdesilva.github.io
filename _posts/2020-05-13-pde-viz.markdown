@@ -18,9 +18,9 @@ depth on how to build a PDE solver out of components in
 and other Julia libraries.
 
 
-This was my first time for both working differential equations in Julia
+This was my first time both for working with differential equations in Julia
 and for writing a PDE solver.
-I chose to write a solver for 1D heat and wave equations
+I chose to write a solver for the 1D heat and wave equations
 with Dirichlet boundary conditions, since they are
 the most straightforward and show up in
 every introductory PDE course.
@@ -84,7 +84,7 @@ working on this post
 I found out that `DifferentialEquations.jl` doesn't yet support stiff
 solvers for second order ODE problems.
 I also think that it's a bit harder to debug Julia errors,
-but maybe that's because I don't have too much Julia experience.
+but maybe that's because Julia is still new to me.
 
 
 There's also some libraries that are used to support research into the
@@ -99,13 +99,14 @@ machine learning.
 
 
 ### Heat Equation
-The heat equation in 1D is most commonly used to model
+The heat equation in 1D is commonly used to model
 an insulated rod with the ends connected to a heat source
 or sink held at a constant temperature.
 In general though, the heat equation can be used to model
-how things diffuse. It can also be used to model how
+other types of diffusion. It can also be used to model how
 the probability density of a stochastic process(specifically a random walk)
-changes over time.
+changes over time. You could even apply the higher dimensional case
+to denoising images.
 
 The approach I used to solve the heat equation is the 
 [explicit method](https://en.wikipedia.org/wiki/Finite_difference_method#Explicit_method)
