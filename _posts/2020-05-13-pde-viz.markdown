@@ -6,14 +6,162 @@ categories: julia pde
 mathjax: true
 ---
 
-Lately I've been learning to work with differential equations in Julia.
+This blog post is going to go over how to build
+Partial Differential Equation(PDE) solver from a novice perspective.
+One of the resources that inspired and helped me to write this is
+[Solving PDEs in Julia](https://nextjournal.com/sosiris-diffeq/pde-2018) by
+Chris Rackauckas, the lead dev on 
+[DifferentialEquations.jl](https://docs.sciml.ai/stable/index.html).
+I highly recommend you check out his JuliaCon talk, which goes a lot more into
+depth on how to build a PDE solver out of components in 
+[DifferentialEquations.jl](https://docs.sciml.ai/stable/index.html)
+and other Julia libraries.
 
 
-[](https://nextjournal.com/sosiris-diffeq/pde-2018)
-[](https://docs.sciml.ai/stable/index.html)
+This was my first time for both working differential equations in Julia
+and for writing a PDE solver.
+I chose to write a solver for 1D heat and wave equations
+with Dirichlet boundary conditions, since they are
+the most straightforward and show up in
+every introductory PDE course.
+If you want to play around with the code it's availble at
+[tqhdesilva/pde-viz](https://github.com/tqhdesilva/pde-viz).
+
+
+* TOC
+{:toc}
+
+### Quick Background on PDEs
+Although it would be good to know some PDE before reading this,
+I don't think it's necessary to know the math to appreciate the visuals below.
+So here's a quick background on PDE and the physical interpretation on the heat
+equation and wave equation.
+
+Partial Differential Equations(PDE) are equations relating partial derivatives
+of a function. For example, if we have a function $u(x, t)$, representing the heat
+along a rod of length $L$ at time $t$ and position $x$, the distance from a given end, we could
+choose to represent our function with the equation:
+
+$$
+  u_t = u_{xx}
+$$
+
+where $u_t = \frac{\partial u}{\partial t}$ and
+$u_{xx} = \frac{\partial^2 u}{\partial x^2}$.
+To unambiguously define $u$, we also need initial conditions
+and boundary conditions. Initial condition is the heat distribution
+in the rod at time $0$:
+
+$$
+  u(x, 0) = f(x) \qquad \forall x \in (0, L)
+$$
+
+Boundary conditions are  the temperature at the tends
+Today we are only going to use Dirichlet boundary conditions,
+which means the boundary conditions don't change over time.
+
+$$
+\begin{align}
+  u(0, t) & = K_1 \\
+  u(L, t) & = K_2
+\end{align}
+$$
+
+### Why Use Julia for Differential Equations?
+Julia is a great programming language for scientific computing in general.
+For differential equations in particular, there are some great libraries, notably
+`DifferentialEquations.jl` which we used here.
+One downside to using Julia for differential equations is that some of these
+libraries still need some polishing. For instance, I found out in the course of
+working on this post that `DifferentialEquations.jl` doesn't support stiff
+solvers for second order ODE problems.
+There's also some cool libraries that are used to support research into the
+combination of neural networks and
+differential equations, such as
+[NeuralNetDiffEq.jl](https://github.com/JuliaDiffEq/NeuralNetDiffEq.jl)
+and
+[DiffEqFlux.jl](https://github.com/JuliaDiffEq/DiffEqFlux.jl).
+These libraries are a part of [SciML](https://sciml.ai/), an open source project aimed at advancing scientific
+machine learning.
+
+
+
+### Heat Equation
+The approach I used to solve the heat equation is the 
+[explicit method](https://en.wikipedia.org/wiki/Finite_difference_method#Explicit_method)
+of the Finite Difference Method(FDM). The idea is to solve the equation
+
+$$u_t = u_{xx}$$
+
+by solving for $u_t$ with the forward difference and $u_{xx}$ with central difference.
+The equality can be rewritten as:
+
+$$
+  \frac{u_j^{n + 1} - u_j^n}{\Delta t}
+  =
+  \frac{u_{j + 1}^n - 2 u_j^n + u_{j - 1}^n}{\Delta x^2}
+$$
+
+where $u_j^n$ is the value of $u$ at $t = \Delta t n$
+and $x = \Delta x j$.
+We can write a recursion relation in time as:
+
+$$
+u_j^{n + 1} = u_j^n + \frac{\Delta t}{\Delta x^2} (u_{j + 1}^n - 2 u_j^n + u_{j - 1}^n)
+$$
+
+#### Case 1
+$$
+\begin{align}
+& u_t = u_{xx} \\
+& u(0, t) = u(10, t) = 0 \qquad & t \gt 0 \\
+& u(x, 0) = 0 \qquad & x \in (0, 10)
+\end{align}
+$$
 ![heat_equation_case_1]({{ '/assets/images/heat_equation_case_1.gif' | relative_url }})
-![heat_equation_case_2]({{ '/assets/images/heat_equation_case_2.gif' | relative_url }})
+
+#### Case 2
+$$
+\begin{align}
+& u_t = u_{xx} \\
+& u(0, t) = u(10, t) = 1 \qquad & t \gt 0 \\
+& u(x, 0) = 1 \qquad & x \in (0, 10)
+\end{align}
+$$
+![heat_equation_case_2]({{ '/assets/images/heat_equation_case_2.gif' |
+relative_url }})
+
+#### Case 3
+$$
+\begin{align}
+& u_t = u_{xx} \\
+& u(0, t) = 0,\: u(10, t) = 1 \qquad & t \gt 0 \\
+& u(x, 0) = 1 \qquad & x \in (0, 10)
+\end{align}
+$$
 ![heat_equation_case_3]({{ '/assets/images/heat_equation_case_3.gif' | relative_url }})
+
+
+### Wave Equation
+#### Case 1
 ![wave_equation_case_1]({{ '/assets/images/wave_equation_case_1.gif' | relative_url }})
+
+#### Case 2
 ![wave_equation_case_2]({{ '/assets/images/wave_equation_case_2.gif' | relative_url }})
+
+
 ![wave_equation_case_2_nonstiff_solver]({{'/assets/images/wave_equation_case_2_nonstiff_solver.gif' | relative_url }})
+
+
+### What's Next?
+There are a few things I want to try next:
+- Higher dimensional PDEs, maybe using `DiffEqOperators` to simplify implementation.
+- Add non-linear terms.
+- Other boundary conditions(the next simples would be Von Neumann).
+- Do a deeper study into the numerical analysis side of PDE solvers.
+- Look at other methods for solving PDEs with more complicated geometry, such as
+  Finite Element Analysis.
+
+In the future I might do some reading on 
+[Mixing Differential Equations and Neural Networks for Physics-Informed Learning](https://mitmath.github.io/18337/lecture15/diffeq_machine_learning)
+and see if I can make a project out of it.
