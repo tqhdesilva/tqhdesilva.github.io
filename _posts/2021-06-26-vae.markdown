@@ -1,0 +1,38 @@
+---
+layout: post
+title:  "Learning About Variational Auto-Encoders"
+date:   2021-06-26 21:00:00 -0700
+categories: vae
+mathjax: true
+---
+Variational Auto-Encoders(VAE) are an extension of Auto-Encoders(AE) to allow a probabilistic representation of the latent space.
+Rather than learning a deterministic latent representation of the data, VAE instead learns a distribution over the latent space.
+This blog post is intended as a quick and dirty introduction to understanding and working with VAE.
+We will not go into too much detail on the math or new developments and applications of VAE, instead focusing on showing code examples applied to MNIST.
+
+* TOC
+{:toc}
+
+# Auto-Encoder Architecture
+Auto-Encoders(AE) are a type of unsupervised model that aims to learn a latent representation of the data.
+An advantage to learning a latent representation might be to leverage unlabeled data to generate features for some other task, or to decrease the dimensionality of the features, as the latent space is usually chosen to be lower dimensional than the input space.
+In some sense, AE can be thought of as similar to Prinicple Component Analysis(PCA), a method which also seeks to learn a latent representation.
+Actually, if we restrict our encoder and decoder networks to be linear(i.e. no activation function, fully connected layers), then the optimal solution would be the same as PCA!
+
+AE are composed of two component networks: the encoder and the decoder.
+The encoder maps the input space to the latent space, and the decoder does the inverse of this and maps the latent space to the input space.
+Although the decoder inverts the encoder, it does not need to have the same architecture.
+For example, our input network could be convolutional, but we could choose any architecture, such as fully connected, for our decoder.
+
+[1](#doersch)
+
+# VAE Architecture
+
+# VAE Loss and Training
+
+# MNIST AE Example
+
+# MNIST VAE Example
+
+# References
+<a name="doersch">[1] Carl Doersch, [Tutorial on Variational Autoencoders](https://arxiv.org/abs/1606.05908).</a>
