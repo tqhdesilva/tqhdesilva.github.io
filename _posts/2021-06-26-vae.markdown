@@ -1,11 +1,11 @@
 ---
 layout: post
-title:  "Learning About Variational Auto-Encoders"
+title:  "Variational Auto-Encoders"
 date:   2021-06-26 21:00:00 -0700
 categories: vae
 mathjax: true
 ---
-Variational Auto-Encoders(VAE) are an extension of Auto-Encoders(AE) to allow a probabilistic representation of the latent space.
+Variational Auto-Encoders(VAE) are an extension of Auto-Encoders(AE) which allow a probabilistic representation of the latent space.
 Rather than learning a deterministic latent representation of the data, VAE instead learns a distribution over the latent space.
 This blog post is intended as a quick and dirty introduction to understanding and working with VAE.
 We will not go into too much detail on the math or new developments and applications of VAE, instead focusing on showing code examples applied to MNIST.
@@ -35,4 +35,4 @@ For example, our input network could be convolutional, but we could choose any a
 # MNIST VAE Example
 
 # References
-<a name="doersch">[1] Carl Doersch, [Tutorial on Variational Autoencoders](https://arxiv.org/abs/1606.05908).</a>
+<a name="doersch" class="aref">[1] Carl Doersch, [Tutorial on Variational Autoencoders](https://arxiv.org/abs/1606.05908).</a>
