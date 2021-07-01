@@ -110,7 +110,7 @@ $$
 D_{KL}(P||Q) = \int_{\Omega} log(\frac{dP}{dQ}) dP
 $$
 
-for $P$, $Q$ measures on $\Omega$ and $P$ absolutely continuous w.r.t to $Q$.
+for $P$, $Q$ measures on $\Omega$ and $P$ absolutely continuous w.r.t $Q$.
 
 The interpretation of KLD is that is that $D_{KL}(P||Q)$ describes the amount of information lost when using $Q$ to approximate $P$.
 So using KLD can give us a way of quantifying how close $q(z|x)$ is to $p(z|x)$.
@@ -123,13 +123,35 @@ $$
 &= \min_{\theta, \phi} \int_{\mathbb{R}^n} q_\phi (z|x) \log \frac{q_\phi (z|x) p(x)}{p(z, x)} dz \\
 &= \min_{\theta, \phi} \int_{\mathbb{R}^n} q_\phi(z|x) (\log \frac{q_\phi(z|x)}{p(z, x)} + \log p(z)) dz \\
 &= \min_{\theta, \phi} \int_{\mathbb{R}^n} q_\phi(z|x) \log \frac{q_\phi(z|x)}{p(z, x)} dz + \int_{\mathbb{R}^n} q_\phi(z|x) \log p(x) dz \\
-&= \log p(x) + \min_{\theta, \phi} \int_{\mathbb{R}^n} q_\phi(z|x) \log \frac{q_\phi(z|x)}{p(z, x)} dz
+&= \log p(x) + \min_{\theta, \phi} \int_{\mathbb{R}^n} q_\phi(z|x) \log \frac{q_\phi(z|x)}{p(z, x)} dz \\
+&= \log p(x) + \min_{\theta, \phi} E_{Q}[\log \frac{q_\phi(z|x)}{p(z, x)}]
 \end{aligned}
 $$
 
 where $\phi$ are the parameters of the encoder and $\theta$ are the parameters of the decoder.
+$E_Q$ is the expectation w.r.t the measure defined by the distribution $q(z|x)$.
 Note that although the expression does not contain $\theta$ at the moment, it will appear once $p_\theta(x|z)$ appears.
 In the last step, $p(x)$ in the sum does not depend on either parameter $\theta$, $\phi$ so we can safely ignore it.
+
+$$
+\begin{aligned}
+&\min_{\theta, \phi} E_{Q}[\log \frac{q_\phi(z|x)}{p(z, x)}] \\
+&= \min_{\theta, \phi} E_{Q}[\log \frac{q_\phi(z|x)}{p_\theta(x|z) p(z)}] \\
+&= \min_{\theta, \phi} - E_{Q}[\log p_\theta(x|z) + \log \frac{p(z)}{q_\phi(z|x)}] \\
+&= \min_{\theta, \phi} - E_{Q}[\log p_\theta(x|z)] + D_{KL}(q_\phi(z|x)||p(z)) \\
+&:= \min_{\theta, \phi} - \mathcal{L_{\theta, \phi}}(Q)
+\end{aligned}
+$$
+
+Where $\mathcal{L_{\theta, \phi}}(Q) = E_{Q}[\log p_\theta(x|z)] - D_{KL}(q_\phi(z|x)\|\|p(z))$ is the Evidence Lower Bound.
+The naming for ELBO is justified as it is the lower bound of $\log p(x)$, the log evidence:
+
+$$
+\log p(x) = D_{KL}(q_\phi(z|x)||p(z|x)) + \mathcal{L_{\theta, \phi}}(Q)
+$$
+
+assuming $D_{KL}(Q\|\|P) \geq 0$, which follows from Gibb's inequality.
+To summarize, the loss in VAE training is the negative ELBO loss, and the ELBO loss is composed of two parts: the reconstruction loss and KLD from the prior to the variational conditional distribution.
 
 
 # MNIST VAE Example
