@@ -44,7 +44,7 @@ Keep in mind also, this only takes the first two principal components, i.e. good
 Looking at the reconstruction $\hat{x}$ is important for qualitatively assessing the performance of an Auto-Encoder.
 Here we can see the original and reconstructed images for the MNIST Auto-Encoder.
 
-{% include image.html url="/assets/images/reconstruction_ae.png" description="Original and reconstructed MNIST images." %}
+{% include image.html url="/assets/images/reconstruction_ae.png" description="Original(left) and reconstructed(right) MNIST images." %}
 
 In addition to assessing the model quality, the reconstruction $\hat{x}$ can also be used for collaborative recommendation systems and anomaly detection.
 For collaborative recommendation systems, such as in [\[1\]](#kuchaiev_et_al), the model is trained to encode the sparse input $x$ into a latent space.
@@ -98,11 +98,103 @@ By sampling from the prior distribution and passing the sampled latent space sam
 For a more in-depth tutorial and overview of VAE, see [\[3\]](#doersch).
 
 # VAE Loss and Training
+The goal of training VAE is to simultaneously optimize the encoder to learn a good approximation $q(z|x)$ to $p(z|x)$ and at same time learn how to reconstruct $x$ from the latent features.
+The decoder will determine our likelihood distribution $p(x|z)$.
 
+The way to determine whether $q(z\|x)$ is a good approximation of $p(z\|x)$ is to use the Kullback-Leibler Divergence(KLD).
+The KLD from probability measures $Q$ to $P$ is written as $D_{KL}(P\|\|Q)$.
+KLD is asymmetric, meaning $D_{KL}(P\|\|Q) = D_{KL}(Q\|\|P)$ is not in general true.
+In the general case, KLD is defined as:
 
-# MNIST AE Example
+$$
+D_{KL}(P||Q) = \int_{\Omega} log(\frac{dP}{dQ}) dP
+$$
+
+for $P$, $Q$ measures on $\Omega$ and $P$ absolutely continuous w.r.t to $Q$.
+
+The interpretation of KLD is that is that $D_{KL}(P||Q)$ describes the amount of information lost when using $Q$ to approximate $P$.
+So using KLD can give us a way of quantifying how close $q(z|x)$ is to $p(z|x)$.
+We'll be using KLD as the loss of the network, seeking to minimize:
+
+$$
+\begin{aligned}
+&\min_{\theta, \phi} D_{KL}(q_\phi(z|x)||p(z|x)) \\
+&= \min_{\theta, \phi} \int_{\mathbb{R}^n} q_\phi (z|x) \log \frac{q_\phi (z|x)}{p(z|x)} dz \\
+&= \min_{\theta, \phi} \int_{\mathbb{R}^n} q_\phi (z|x) \log \frac{q_\phi (z|x) p(x)}{p(z, x)} dz \\
+&= \min_{\theta, \phi} \int_{\mathbb{R}^n} q_\phi(z|x) (\log \frac{q_\phi(z|x)}{p(z, x)} + \log p(z)) dz \\
+&= \min_{\theta, \phi} \int_{\mathbb{R}^n} q_\phi(z|x) \log \frac{q_\phi(z|x)}{p(z, x)} dz + \int_{\mathbb{R}^n} q_\phi(z|x) \log p(x) dz \\
+&= \log p(x) + \min_{\theta, \phi} \int_{\mathbb{R}^n} q_\phi(z|x) \log \frac{q_\phi(z|x)}{p(z, x)} dz
+\end{aligned}
+$$
+
+where $\phi$ are the parameters of the encoder and $\theta$ are the parameters of the decoder.
+Note that although the expression does not contain $\theta$ at the moment, it will appear once $p_\theta(x|z)$ appears.
+In the last step, $p(x)$ in the sum does not depend on either parameter $\theta$, $\phi$ so we can safely ignore it.
+
 
 # MNIST VAE Example
+
+```python
+class VAE(nn.Module):
+    def __init__(self, latent_size):
+        super(VAE, self).__init__()
+        self.latent_size = latent_size
+        self.encoder = nn.Sequential(
+            nn.Conv2d(in_channels=1, out_channels=6, kernel_size=5, padding=2),
+            nn.AvgPool2d(kernel_size=2),
+            nn.Conv2d(in_channels=6, out_channels=16, kernel_size=5),
+            nn.AvgPool2d(kernel_size=2),
+            nn.Conv2d(in_channels=16, out_channels=120, kernel_size=5),
+            nn.Flatten(),
+            nn.Linear(120, 84),
+            nn.Tanh(),
+            nn.Linear(84, 2 * latent_size),
+            nn.Tanh(),
+        )
+        self.decoder = nn.Sequential(
+            nn.Linear(latent_size, 84),
+            nn.Tanh(),
+            nn.Linear(84, 120),
+            nn.Tanh(),
+            nn.Unflatten(dim=1, unflattened_size=(120, 1, 1)),
+            nn.ConvTranspose2d(in_channels=120, out_channels=16, kernel_size=5),
+            nn.ReLU(),
+            nn.ConvTranspose2d(
+                in_channels=16, out_channels=16, kernel_size=2, stride=2
+            ),
+            nn.ReLU(),
+            nn.ConvTranspose2d(in_channels=16, out_channels=6, kernel_size=5, stride=2),
+            nn.ReLU(),
+            nn.ConvTranspose2d(in_channels=6, out_channels=1, kernel_size=6),
+        )
+
+    def forward(self, input):
+        encoder_out = self.encoder(input)
+        mu, logvar = torch.split(encoder_out, self.latent_size, dim=-1)
+        z = mu + torch.randn(mu.shape).to(input.device) * torch.exp(logvar)
+        output = self.decoder(z)
+        return output, mu, logvar
+
+```
+
+```python
+
+def kld_loss(mu, logvar):
+    loss = 0.5 * torch.mean(torch.exp(logvar) + mu ** 2 - 1 - logvar)
+    return loss
+
+
+def reconstruction_loss(x_est, x_actual):
+    return nn.functional.mse_loss(x_est, x_actual)
+
+
+def elbo_loss(x_est, x_actual, mu, logvar):
+    return reconstruction_loss(x_est, x_actual) + kld_loss(mu, logvar)
+```
+
+{% include image.html url="/assets/images/vae_pca.png" description="First two principal components of latent features from VAE." %}
+
+{% include image.html url="/assets/images/vae_reconstruction_2.png" description="Original(left), VAE reconstruction(right) on MNIST" %}
 
 # References
 
