@@ -139,7 +139,7 @@ $$
 &= \min_{\theta, \phi} E_{Q}[\log \frac{q_\phi(z|x)}{p_\theta(x|z) p(z)}] \\
 &= \min_{\theta, \phi} - E_{Q}[\log p_\theta(x|z) + \log \frac{p(z)}{q_\phi(z|x)}] \\
 &= \min_{\theta, \phi} - E_{Q}[\log p_\theta(x|z)] + D_{KL}(q_\phi(z|x)||p(z)) \\
-&:= \min_{\theta, \phi} - \mathcal{L_{\theta, \phi}}(Q)
+&= \min_{\theta, \phi} - \mathcal{L_{\theta, \phi}}(Q)
 \end{aligned}
 $$
 
@@ -150,8 +150,21 @@ $$
 \log p(x) = D_{KL}(q_\phi(z|x)||p(z|x)) + \mathcal{L_{\theta, \phi}}(Q)
 $$
 
-assuming $D_{KL}(Q\|\|P) \geq 0$, which follows from Gibb's inequality.
+assuming $D_{KL}(q_\phi(z|x)||p(z|x)) \geq 0$, which follows from Gibb's inequality.
 To summarize, the loss in VAE training is the negative ELBO loss, and the ELBO loss is composed of two parts: the reconstruction loss and KLD from the prior to the variational conditional distribution.
+
+
+We've already alluded to the fact that the encoder network determines $q_\phi(z|x)$ and the decoder network determines $p_\theta(x|z)$.
+For $p(x)$, the prior, we generally use a standard multivariate normal, i.e. $\mathcal{N}(\mathbb{0}, \mathcal{I})$.
+With these components, it is possible to calculate the loss.
+
+Let's examine how the encoder determines the distribution $q_\phi(z|x)$.
+The encoder network outputs the parameters of the multivariate distribution for $\mathbb{z}$ conditioned on $\mathbb{x}$, with the constraint that the covariance matrix is diagonal.
+In other words, the encoder will output a vector of size $2n$, where $z \in \mathbb{R}^n$.
+The first $n$ values of the vector are $\mathbb{\mu}$ and the last $n$ are $\sigma_1^2, \sigma_2^2, ..., \sigma_n^2$, i.e. $\mathrm{Diag}(\Sigma)$, giving us a multivariate normal distribution $\mathbb{z} \sim \mathcal{N}(\mathbb{\mu}, \Sigma)$.
+Unfortunately, we would need to constrain our variance to be non-negative.
+To solve this issue we instead output $\log \sigma_1, \log \sigma_2, ..., \log \sigma_n$, which are unconstrained for $\sigma \in (0, \inf)$.
+
 
 
 # MNIST VAE Example
