@@ -154,20 +154,79 @@ assuming $D_{KL}(q_\phi(z|x)||p(z|x)) \geq 0$, which follows from Gibb's inequal
 To summarize, the loss in VAE training is the negative ELBO loss, and the ELBO loss is composed of two parts: the reconstruction loss and KLD from the prior to the variational conditional distribution.
 
 
+Now that we understand the components of the loss, we can see that there are three distributions that need to be determined to calculate the loss: the likelihood $p_\phi(x|z)$, the prior $p(x)$, and the variational posterior $q(z|x)$.
 We've already alluded to the fact that the encoder network determines $q_\phi(z|x)$ and the decoder network determines $p_\theta(x|z)$.
-For $p(x)$, the prior, we generally use a standard multivariate normal, i.e. $\mathcal{N}(\mathbb{0}, \mathcal{I})$.
+For $p(x)$, the prior, we generally use a standard multivariate normal, i.e. $\mathcal{N}(\mathbf{0}, \mathcal{I})$.
 With these components, it is possible to calculate the loss.
 
 Let's examine how the encoder determines the distribution $q_\phi(z|x)$.
-The encoder network outputs the parameters of the multivariate distribution for $\mathbb{z}$ conditioned on $\mathbb{x}$, with the constraint that the covariance matrix is diagonal.
+The encoder network outputs the parameters of the multivariate distribution for $\mathbf{z}$ conditioned on $\mathbf{x}$, with the constraint that the covariance matrix is diagonal.
 In other words, the encoder will output a vector of size $2n$, where $z \in \mathbb{R}^n$.
-The first $n$ values of the vector are $\mathbb{\mu}$ and the last $n$ are $\sigma_1^2, \sigma_2^2, ..., \sigma_n^2$, i.e. $\mathrm{Diag}(\Sigma)$, giving us a multivariate normal distribution $\mathbb{z} \sim \mathcal{N}(\mathbb{\mu}, \Sigma)$.
+The first $n$ values of the vector are the elements of the vector $\mathbf{\mu}$ and the last $n$ are $(\sigma_1^2, \sigma_2^2, ..., \sigma_n^2)^T$, i.e. $\mathrm{Diag}(\Sigma)$, giving us a multivariate normal distribution $\mathbf{z} \sim \mathcal{N}(\mathbf{\mu}, \Sigma)$.
 Unfortunately, we would need to constrain our variance to be non-negative.
-To solve this issue we instead output $\log \sigma_1, \log \sigma_2, ..., \log \sigma_n$, which are unconstrained for $\sigma \in (0, \inf)$.
+To solve this issue we instead have the encoder output the vector $(\log \sigma_1, \log \sigma_2, ..., \log \sigma_n)^T$, which are unconstrained for $\sigma \in (0, \infty)$.
 
+If we want to sample $z$ from $\mathcal{N}(\mu, \Sigma)$, we have another problem.
+How can we backpropagate through the sampling process?
+The answer is using the reparametrization trick.
+Instead of sampling from $\mathcal{N}(\mu, \Sigma)$, we sample instead $\epsilon$ from the standard normal $N(\mathbf{0}, \mathcal{I})$.
+Then we perform the following operations to get $\mathbf{z}$:
 
+$$
+\mathbf{z} := \epsilon \odot \mathbf{\sigma} + \mathbf{\mu}
+$$
+
+where $\sigma = (\sigma_1, \sigma_2, ..., \sigma_n)^T$ can be obtained by exponentiating the outputs of the encoder, $(\log \sigma_1, \log \sigma_2, ..., \log \sigma_3)^T$, and $\epsilon \sim \mathcal{N}(0, \mathcal{I})$.
+Now we can find the partial derivatives of $\mathbf{z}$ w.r.t $\sigma$ and $\mu$, and therefore can backpropagate through the sampling step.
+Without going into too much detail about how to calculate the $D_{KL}(q_\phi(z|x) || p(z))$, we can find that:
+
+$$
+D_{KL}(q_\phi(z|x) || p(z)) = \frac{1}{2} \sum_{i=1}^{n} - \log \sigma_i^2 - 1 + \sigma_i^2 + \mu_i
+$$
+
+Next we want to take a look at how we can obtain $p_\theta(x\|z)$ from the decoder network.
+The decoder maps from $\mathbf{z}$ to $\mathbf{\hat{x}}$.
+Once we get $\mathbf{\hat{x}}$, we need to make some assumptions to calculate the reconstruction loss.
+If we make the assumption that $p(\mathbf{x}|\mathbf{\hat{x}})$ is normally distributed, then we get a MSE reconstruction loss.
+
+$$
+-E_Q[\log p_\theta(x|z)] = \frac{1}{n} \sum_{i=1}^n (x_i - \hat{x}_i) ^ 2
+$$
+
+Sometimes we may also choose to use a different loss, such as binary cross entropy, depending on our assumptions and what range the input data falls in.
+The important thing is to choose some loss function that penalizes poor reconstruction of the input.
 
 # MNIST VAE Example
+Now let's briefly go over some code key to implementing and training VAE on MNIST.
+Since we've just discussed the loss used in VAE, let's examine how to implement the loss in PyTorch.
+Note that our overall `elbo_loss` method has both the reconstruction term and KLD loss term.
+We need both the parameters from the encoder, $\mathbf{\mu}$ and $\log \mathbf{\sigma}$, as well as the reconstructed inputs $\mathbf{\hat{x}}$ and the original inputs $\mathbf{x}$.
+The component methods, `kld_loss` and `reconstruction_loss` match the description of the component loss functions mentioned in the previous section.
+
+
+```python
+
+def kld_loss(mu, logvar):
+    loss = 0.5 * torch.mean(torch.exp(logvar) + mu ** 2 - 1 - logvar)
+    return loss
+
+
+def reconstruction_loss(x_est, x_actual):
+    return nn.functional.mse_loss(x_est, x_actual)
+
+
+def elbo_loss(x_est, x_actual, mu, logvar):
+    return reconstruction_loss(x_est, x_actual) + kld_loss(mu, logvar)
+```
+
+The actual implementation of the `VAE` module in PyTorch is below.
+There are two submodules, the encoder and the decoder.
+The results for the AE shown in previous sections is for a fully connected network, whereas here the encoder and decoder have convolutional and deconvolutional layers respectively.
+The key thing to note in the encoder is that the output size of the last layer is twice the size of the latent space, $2 n$,  since we need both $\mathbf{\mu}$ and $\log \mathbf{\sigma}$ to determine the distribution of $\mathbf{z}$.
+The decoder takes input of size $n$, i.e. the sample latent features, and outputs the same size as the input images(in the case of MNIST $28 \times 28$).
+Finally the forward pass of the network outputs both the decoder output, i.e. reconstruction $\mathbf{\hat{x}}$ and the parameters determining the latent $\mathbf{z}$, i.e. $\mathbf{\mu}$ and $\log \mathbf{\sigma}$.
+These will all be required to call the `elbo_loss` method above, which will calculate the negative ELBO loss.
+
 
 ```python
 class VAE(nn.Module):
@@ -212,24 +271,32 @@ class VAE(nn.Module):
 
 ```
 
-```python
+The results from training the network on MNIST for 30 epochs, with batch size of 64, learning rate of 0.001, and latent size of 64 are presented below.
 
-def kld_loss(mu, logvar):
-    loss = 0.5 * torch.mean(torch.exp(logvar) + mu ** 2 - 1 - logvar)
-    return loss
-
-
-def reconstruction_loss(x_est, x_actual):
-    return nn.functional.mse_loss(x_est, x_actual)
-
-
-def elbo_loss(x_est, x_actual, mu, logvar):
-    return reconstruction_loss(x_est, x_actual) + kld_loss(mu, logvar)
-```
+Similar to the AE example discussed above, we can take a look at the first two principal components to get an idea of how well the classes are separated in the latent space.
 
 {% include image.html url="/assets/images/vae_pca.png" description="First two principal components of latent features from VAE." %}
 
+It seems like VAE is actually not so useful for this task!
+Recall that one of the features of VAE is that our 64 dimensional latent feature space is composed of 64 independent Gaussian random variables.
+In addition, there is a regularization term penalizing terms that are too far away from the standard normal distribution.
+The result is we get a lot of independent principal components in the latent space, and thus using PCA to visualize the variance is not very useful.
+If we're interested in reducing the variance in the data to just two latent dimensions, we may need to choose a lower dimensional embedding to train the VAE.
+
+
+The reconstruction vs input image comparison is similar to the AE example.
+Qualitatively, the image background are less noiser, which could indicate that a more robust representation is learned.
+One interesting thing to note is that once the network is trained, unless we set a random seed, the reconstructed image will be different everytime, since the reconstruction depends on sampling from a Gaussian latent variable.
+We could sample many reconstructions from a single input to approximate the distribution of the reconstruction.
+
 {% include image.html url="/assets/images/vae_reconstruction_2.png" description="Original(left), VAE reconstruction(right) on MNIST" %}
+
+
+# Conclusion
+Hopefully someone finds this helpful to learn a little bit about VAE(and AE).
+VAE/AE is a really interesting topic and often these models are used as part of a larger machine learning system, learning representations that can be used to better train on other tasks.
+The first time I really ran into VAE was actually learning about latent ODE [\[4\]](#chen_et_al), which use VAE to encode the input into a low dimensional latent space, then learn continuous time dynamics on the latent space, and then use the decoder to map the continuous latent space to get a continuous time interpolation between points in the time series.
+The point is, VAE/AE is a very flexible deep learning tool.
 
 # References
 
@@ -238,3 +305,5 @@ def elbo_loss(x_est, x_actual, mu, logvar):
 <a name="kingma_et_al" class="aref">[2] Diederik Kingma and Max Welling. [Auto-Encoding Variational Bayes](https://arxiv.org/abs/1312.6114)</a>
 
 <a name="doersch" class="aref">[3] Carl Doersch. [Tutorial on Variational Autoencoders](https://arxiv.org/abs/1606.05908).</a>
+
+<a name="chen_et_al" class="aref">[4] Ricky Chen, Yulia Rubanova, Jesse Bettencourt, David Duvenaud. [Neural Ordinary Differential Equations](https://arxiv.org/abs/1806.07366) </a>
