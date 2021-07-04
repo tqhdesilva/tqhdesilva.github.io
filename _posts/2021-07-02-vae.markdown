@@ -1,7 +1,7 @@
 ---
 layout: post
 title:  "Variational Auto-Encoders"
-date:   2021-06-26 21:00:00 -0700
+date:   2021-07-02 21:00:00 -0700
 categories: vae
 mathjax: true
 ---
