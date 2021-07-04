@@ -5,6 +5,7 @@ layout: default
 
     <header class="post-header">
         {% include mathjax.html %}
+        <link rel="stylesheet" href="/assets/css/styles.css">
         <h1 class="post-title p-name" itemprop="name headline">{{ page.title | escape }}</h1>
         <p class="post-meta">
             {%- assign date_format = site.minima.date_format | default: "%b %-d, %Y" -%}
@@ -24,7 +25,8 @@ layout: default
                 <span class="p-author h-card" itemprop="name">{{ author }}</span></span>
             {%- if forloop.last == false %}, {% endif -%}
             {% endfor %}
-            {%- endif -%}</p>
+            {%- endif -%}
+        </p>
     </header>
 
     <div class="post-content e-content" itemprop="articleBody">
