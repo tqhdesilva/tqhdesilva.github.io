@@ -26,31 +26,31 @@ AE are composed of two component networks: the encoder and the decoder.
 The encoder maps the input space to the latent space, and the decoder does the inverse of this and maps the latent space to the input space.
 Although the decoder inverts the encoder, it does not need to have the same architecture.
 For example, our input network could be convolutional, but we could choose any architecture, such as fully connected, for our decoder.
-The loss used to train the network is some form of reconstruction loss, which evaluates the reconstructed $\hat{x}$ against $x$, e.g. Mean-Square Error(MSE).
+The loss used to train the network is some form of reconstruction loss, which evaluates the reconstructed $\mathbf{\hat{x}}$ against $\mathbf{x}$, e.g. Mean-Square Error(MSE).
 
-The encoder $f$ gives us $z = f(x)$ and the decoder $g$ gives us $\hat{x} = g(z)$.
-What can we use the latent features $z$ and the reconstruction $\hat{x}$ for?
+The encoder $f$ gives us $\mathbf{z} = f(\mathbf{x})$ and the decoder $g$ gives us $\mathbf{\hat{x}} = g(\mathbf{z})$.
+What can we use the latent features $\mathbf{z}$ and the reconstruction $\mathbf{\hat{x}}$ for?
 
-The latent feature $z$ could be used for any number of things.
+The latent feature $\mathbf{z}$ could be used for any number of things.
 Auto-Encoders could help us generate low dimensional representations of our data, which could be useful for visualization.
 While we could fit a PCA model on the raw image data, this might not be a great idea since image data is highly non-linear.
-Here is an example of PCA run on the latent features $z$ output from the encoder.
+Here is an example of PCA run on the latent features $\mathbf{z}$ output from the encoder.
 
 {% include image.html url="/assets/images/latent_pca.png" description="Example of 2D PCA Representation of Latent Features of MNIST." %}
 
 The numbers look a bit mixed up still, but a few labels such as 1 and 9 form some more coherent clusters.
 Keep in mind also, this only takes the first two principal components, i.e. good separation of all classes is incredibly hard to achieve in just 2 dimensions.
 
-Looking at the reconstruction $\hat{x}$ is important for qualitatively assessing the performance of an Auto-Encoder.
+Looking at the reconstruction $\mathbf{\hat{x}}$ is important for qualitatively assessing the performance of an Auto-Encoder.
 Here we can see the original and reconstructed images for the MNIST Auto-Encoder.
 
 {% include image.html url="/assets/images/reconstruction_ae.png" description="Original(left) and reconstructed(right) MNIST images." %}
 
-In addition to assessing the model quality, the reconstruction $\hat{x}$ can also be used for collaborative recommendation systems and anomaly detection.
-For collaborative recommendation systems, such as in [\[1\]](#kuchaiev_et_al), the model is trained to encode the sparse input $x$ into a latent space.
-Then the reconstructed $\hat{x}$ is encouraged by a specific loss function, Masked Mean-Square Error(MMSE), to be dense.
-The dense $\hat{x}$ can be used to predict what products a user will like.
-In the case of anomaly detection, $\hat{x}$ and $x$ can be used to calculate the reconstruction error.
+In addition to assessing the model quality, the reconstruction $\hat{\mathbf{x}}$ can also be used for collaborative recommendation systems and anomaly detection.
+For collaborative recommendation systems, such as in [\[1\]](#kuchaiev_et_al), the model is trained to encode the sparse input $\mathbf{x}$ into a latent space.
+Then the reconstructed $\mathbf{\hat{x}}$ is encouraged by a specific loss function, Masked Mean-Square Error(MMSE), to be dense.
+The dense $\mathbf{\hat{x}}$ can be used to predict what products a user will like.
+In the case of anomaly detection, $\mathbf{\hat{x}}$ and $\mathbf{x}$ can be used to calculate the reconstruction error.
 Samples with high reconstruction error may be deemed to be anomalous, as the model is more likely to perform better reconstruction on samples close to the manifold of training samples(the non-anomalous data).
 
 Before moving on, let's talk about how flexible AE are and how they can be used in various contexts.
@@ -60,8 +60,8 @@ Another example of the flexibility of AE is how we can use recurrent networks fo
 In fact, if you've ever used a sequence to sequence model, such as in a translation task, you've seen what is essentially an AE for sequences.
 The encoder in this case is a RNN, which takes in a sequence.
 The decoder is also an RNN, which feeds it's output back into itself.
-The latent state $z$ is the hidden state that gets passed from the last encoding RNN cell to the first decoding RNN cell.
-$z$ should contain all the information needed to reconstruct the sequence.
+The latent state $\mathbf{z}$ is the hidden state that gets passed from the last encoding RNN cell to the first decoding RNN cell.
+$\mathbf{z}$ should contain all the information needed to reconstruct the sequence.
 
 {% include image.html url="/assets/images/RNN-AE.png" description="RNN Sequence-to-Sequence Model as AE" %}
 
@@ -72,20 +72,20 @@ Variational Auto-Encoder(VAE) was introduced in the seminal paper by Kingma and 
 The idea behind VAE is still much the same as the AE case.
 We will still encode the data using an encoder network, and reconstruct the input from the latent space using a decoder network.
 However, the key difference is that the latent features that the encoder maps to are no longer deterministic.
-In other words, instead of learning a deterministic function $x \rightarrow f(x)$, our goal is to learn a conditional distribution $p(z|x)$.
+In other words, instead of learning a deterministic function $\mathbf{x} \rightarrow f(\mathbf{x})$, our goal is to learn a conditional distribution $p(\mathbf{z}|\mathbf{x})$.
 
 ![VAE](/assets/images/VAE.png)
 
-Unfortunately, in the general case finding the posterior $p(z|x)$ is not tractable.
-The term variational describes the fact that we will approximate $p(z|x)$ using a variational distribution $q(z|x)$, which comes from a simpler family of distributions.
+Unfortunately, in the general case finding the posterior $p(\mathbf{z}|\mathbf{x})$ is not tractable.
+The term variational describes the fact that we will approximate $p(\mathbf{z}|\mathbf{x})$ using a variational distribution $q(\mathbf{z}|\mathbf{x})$, which comes from a simpler family of distributions.
 Often in the case of VAE, the family of distributions that $q$ is constrained to is the class of multivariate normal distributions with diagonal variance.
 
 Why might we want to use VAE instead of regular AE?
 Well, for one the model is Bayesian.
-The posterior $p(z|x)$ is calculated as:
+The posterior $p(\mathbf{z}|\mathbf{x})$ is calculated as:
 
 $$
-p(z|x) = \frac{p(x|z) p(z)}{\int_{\mathbb{R}^n} p(x|z) p(z) dz}
+p(\mathbf{z}|\mathbf{x}) = \frac{p(\mathbf{x}|\mathbf{z}) p(\mathbf{z})}{\int_{\mathbb{R}^n} p(\mathbf{x}|\mathbf{z}) p(\mathbf{z}) d\mathbf{z}}
 $$
 
 As a result, we have additional control over how our model learns the latent representation.
@@ -93,15 +93,15 @@ Also, as we will see in the next section, one part of the loss is a regularizati
 We can control the amount of regularization by weighting the reconstruction loss vs the regularization loss from deviating from the prior.
 Such an approach is known as $\beta$-VAE, for the hyperparameter that determines the weighting, $\beta$.
 Finally, VAE can be used as a generative model.
-By sampling from the prior distribution and passing the sampled latent space samples through the decoder, we can sample from $p(x)$.
+By sampling from the prior distribution and passing the sampled latent space samples through the decoder, we can sample from $p(\mathbf{x})$.
 
 For a more in-depth tutorial and overview of VAE, see [\[3\]](#doersch).
 
 # VAE Loss and Training
-The goal of training VAE is to simultaneously optimize the encoder to learn a good approximation $q(z|x)$ to $p(z|x)$ and at same time learn how to reconstruct $x$ from the latent features.
-The decoder will determine our likelihood distribution $p(x|z)$.
+The goal of training VAE is to simultaneously optimize the encoder to learn a good approximation $q(\mathbf{z}|\mathbf{x})$ to $p(\mathbf{z}|\mathbf{x})$ and at same time learn how to reconstruct $\mathbf{x}$ from the latent features.
+The decoder will determine our likelihood distribution $p(\mathbf{x}|\mathbf{z})$.
 
-The way to determine whether $q(z\|x)$ is a good approximation of $p(z\|x)$ is to use the Kullback-Leibler Divergence(KLD).
+The way to determine whether $q(\mathbf{z}\|\mathbf{x})$ is a good approximation of $p(\mathbf{z}\|\mathbf{x})$ is to use the Kullback-Leibler Divergence(KLD).
 The KLD from probability measures $Q$ to $P$ is written as $D_{KL}(P\|\|Q)$.
 KLD is asymmetric, meaning $D_{KL}(P\|\|Q) = D_{KL}(Q\|\|P)$ is not in general true.
 In the general case, KLD is defined as:
@@ -113,84 +113,84 @@ $$
 for $P$, $Q$ measures on $\Omega$ and $P$ absolutely continuous w.r.t $Q$.
 
 The interpretation of KLD is that is that $D_{KL}(P||Q)$ describes the amount of information lost when using $Q$ to approximate $P$.
-So using KLD can give us a way of quantifying how close $q(z|x)$ is to $p(z|x)$.
+So using KLD can give us a way of quantifying how close $q(\mathbf{z}|\mathbf{x})$ is to $p(\mathbf{z}|\mathbf{x})$.
 We'll be using KLD as the loss of the network, seeking to minimize:
 
 $$
 \begin{aligned}
-&\min_{\theta, \phi} D_{KL}(q_\phi(z|x)||p(z|x)) \\
-&= \min_{\theta, \phi} \int_{\mathbb{R}^n} q_\phi (z|x) \log \frac{q_\phi (z|x)}{p(z|x)} dz \\
-&= \min_{\theta, \phi} \int_{\mathbb{R}^n} q_\phi (z|x) \log \frac{q_\phi (z|x) p(x)}{p(z, x)} dz \\
-&= \min_{\theta, \phi} \int_{\mathbb{R}^n} q_\phi(z|x) (\log \frac{q_\phi(z|x)}{p(z, x)} + \log p(z)) dz \\
-&= \min_{\theta, \phi} \int_{\mathbb{R}^n} q_\phi(z|x) \log \frac{q_\phi(z|x)}{p(z, x)} dz + \int_{\mathbb{R}^n} q_\phi(z|x) \log p(x) dz \\
-&= \log p(x) + \min_{\theta, \phi} \int_{\mathbb{R}^n} q_\phi(z|x) \log \frac{q_\phi(z|x)}{p(z, x)} dz \\
-&= \log p(x) + \min_{\theta, \phi} E_{Q}[\log \frac{q_\phi(z|x)}{p(z, x)}]
+&\min_{\theta, \phi} D_{KL}(q_\phi(\mathbf{z}|\mathbf{x})||p(\mathbf{z}|\mathbf{x})) \\
+&= \min_{\theta, \phi} \int_{\mathbb{R}^n} q_\phi (\mathbf{z}|\mathbf{x}) \log \frac{q_\phi (\mathbf{z}|\mathbf{x})}{p(\mathbf{z}|\mathbf{x})} d\mathbf{z} \\
+&= \min_{\theta, \phi} \int_{\mathbb{R}^n} q_\phi (\mathbf{z}|\mathbf{x}) \log \frac{q_\phi (\mathbf{z}|\mathbf{x}) p(x)}{p(\mathbf{z}, \mathbf{x})} d\mathbf{z} \\
+&= \min_{\theta, \phi} \int_{\mathbb{R}^n} q_\phi(\mathbf{\mathbf{z}}|\mathbf{\mathbf{x}}) (\log \frac{q_\phi(\mathbf{\mathbf{z}}|\mathbf{\mathbf{x}})}{p(\mathbf{\mathbf{z}}, \mathbf{\mathbf{x}})} + \log p(\mathbf{\mathbf{z}})) d\mathbf{\mathbf{z}} \\
+&= \min_{\theta, \phi} \int_{\mathbb{R}^n} q_\phi(\mathbf{z}|\mathbf{x}) \log \frac{q_\phi(\mathbf{z}|\mathbf{x})}{p(\mathbf{z}, \mathbf{x})} d\mathbf{z} + \int_{\mathbb{R}^n} q_\phi(\mathbf{z}|\mathbf{x}) \log p(\mathbf{x}) d\mathbf{z} \\
+&= \log p(\mathbf{x}) + \min_{\theta, \phi} \int_{\mathbb{R}^n} q_\phi(\mathbf{z}|\mathbf{x}) \log \frac{q_\phi(\mathbf{z}|\mathbf{x})}{p(\mathbf{z}, \mathbf{x})} d\mathbf{z} \\
+&= \log p(\mathbf{x}) + \min_{\theta, \phi} E_{Q}[\log \frac{q_\phi(\mathbf{z}|\mathbf{x})}{p(\mathbf{z}, \mathbf{x})}]
 \end{aligned}
 $$
 
 where $\phi$ are the parameters of the encoder and $\theta$ are the parameters of the decoder.
-$E_Q$ is the expectation w.r.t the measure defined by the distribution $q(z|x)$.
-Note that although the expression does not contain $\theta$ at the moment, it will appear once $p_\theta(x|z)$ appears.
-In the last step, $p(x)$ in the sum does not depend on either parameter $\theta$, $\phi$ so we can safely ignore it.
+$E_Q$ is the expectation w.r.t the measure defined by the distribution $q(\mathbf{z}|\mathbf{x})$.
+Note that although the expression does not contain $\theta$ at the moment, it will appear once $p_\theta(\mathbf{x}|\mathbf{z})$ appears.
+In the last step, $p(\mathbf{x})$ in the sum does not depend on either parameter $\theta$, $\phi$ so we can safely ignore it.
 
 $$
 \begin{aligned}
-&\min_{\theta, \phi} E_{Q}[\log \frac{q_\phi(z|x)}{p(z, x)}] \\
-&= \min_{\theta, \phi} E_{Q}[\log \frac{q_\phi(z|x)}{p_\theta(x|z) p(z)}] \\
-&= \min_{\theta, \phi} - E_{Q}[\log p_\theta(x|z) + \log \frac{p(z)}{q_\phi(z|x)}] \\
-&= \min_{\theta, \phi} - E_{Q}[\log p_\theta(x|z)] + D_{KL}(q_\phi(z|x)||p(z)) \\
+&\min_{\theta, \phi} E_{Q}[\log \frac{q_\phi(\mathbf{\mathbf{z}}|\mathbf{x})}{p(\mathbf{z}, \mathbf{x})}] \\
+&= \min_{\theta, \phi} E_{Q}[\log \frac{q_\phi(\mathbf{z}|\mathbf{x})}{p_\theta(\mathbf{x}|\mathbf{z}) p(\mathbf{z})}] \\
+&= \min_{\theta, \phi} - E_{Q}[\log p_\theta(\mathbf{x}|\mathbf{z}) + \log \frac{p(\mathbf{z})}{q_\phi(\mathbf{z}|\mathbf{x})}] \\
+&= \min_{\theta, \phi} - E_{Q}[\log p_\theta(\mathbf{x}|\mathbf{z})] + D_{KL}(q_\phi(\mathbf{z}|\mathbf{x})||p(\mathbf{z})) \\
 &= \min_{\theta, \phi} - \mathcal{L_{\theta, \phi}}(Q)
 \end{aligned}
 $$
 
-Where $\mathcal{L_{\theta, \phi}}(Q) = E_{Q}[\log p_\theta(x|z)] - D_{KL}(q_\phi(z|x)\|\|p(z))$ is the Evidence Lower Bound.
-The naming for ELBO is justified as it is the lower bound of $\log p(x)$, the log evidence:
+Where $\mathcal{L_{\theta, \phi}}(Q) = E_{Q}[\log p_\theta(\mathbf{x}|\mathbf{z})] - D_{KL}(q_\phi(\mathbf{z}|\mathbf{x})\|\|p(\mathbf{z}))$ is the Evidence Lower Bound.
+The naming for ELBO is justified as it is the lower bound of $\log p(\mathbf{x})$, the log evidence:
 
 $$
-\log p(x) = D_{KL}(q_\phi(z|x)||p(z|x)) + \mathcal{L_{\theta, \phi}}(Q)
+\log p(\mathbf{x}) = D_{KL}(q_\phi(\mathbf{z}|\mathbf{x})||p(\mathbf{z}|\mathbf{x})) + \mathcal{L_{\theta, \phi}}(Q)
 $$
 
-assuming $D_{KL}(q_\phi(z|x)||p(z|x)) \geq 0$, which follows from Gibb's inequality.
+assuming $D_{KL}(q_\phi(\mathbf{z}|\mathbf{x})||p(\mathbf{z}|\mathbf{x})) \geq 0$, which follows from Gibb's inequality.
 To summarize, the loss in VAE training is the negative ELBO loss, and the ELBO loss is composed of two parts: the reconstruction loss and KLD from the prior to the variational conditional distribution.
 
 
-Now that we understand the components of the loss, we can see that there are three distributions that need to be determined to calculate the loss: the likelihood $p_\phi(x|z)$, the prior $p(x)$, and the variational posterior $q(z|x)$.
-We've already alluded to the fact that the encoder network determines $q_\phi(z|x)$ and the decoder network determines $p_\theta(x|z)$.
-For $p(x)$, the prior, we generally use a standard multivariate normal, i.e. $\mathcal{N}(\mathbf{0}, \mathcal{I})$.
+Now that we understand the components of the loss, we can see that there are three distributions that need to be determined to calculate the loss: the likelihood $p_\phi(\mathbf{x}|\mathbf{z})$, the prior $p(\mathbf{x})$, and the variational posterior $q(\mathbf{z}|\mathbf{x})$.
+We've already alluded to the fact that the encoder network determines $q_\phi(\mathbf{z}|\mathbf{x})$ and the decoder network determines $p_\theta(\mathbf{x}|\mathbf{z})$.
+For $p(\mathbf{x})$, the prior, we generally use a standard multivariate normal, i.e. $\mathcal{N}(\mathbf{0}, \mathcal{I})$.
 With these components, it is possible to calculate the loss.
 
-Let's examine how the encoder determines the distribution $q_\phi(z|x)$.
+Let's examine how the encoder determines the distribution $q_\phi(\mathbf{z}|\mathbf{x})$.
 The encoder network outputs the parameters of the multivariate distribution for $\mathbf{z}$ conditioned on $\mathbf{x}$, with the constraint that the covariance matrix is diagonal.
-In other words, the encoder will output a vector of size $2n$, where $z \in \mathbb{R}^n$.
+In other words, the encoder will output a vector of size $2n$, where $\mathbf{z} \in \mathbb{R}^n$.
 The first $n$ values of the vector are the elements of the vector $\mathbf{\mu}$ and the last $n$ are $(\sigma_1^2, \sigma_2^2, ..., \sigma_n^2)^T$, i.e. $\mathrm{Diag}(\Sigma)$, giving us a multivariate normal distribution $\mathbf{z} \sim \mathcal{N}(\mathbf{\mu}, \Sigma)$.
 Unfortunately, we would need to constrain our variance to be non-negative.
-To solve this issue we instead have the encoder output the vector $(\log \sigma_1, \log \sigma_2, ..., \log \sigma_n)^T$, which are unconstrained for $\sigma \in (0, \infty)$.
+To solve this issue we instead have the encoder output the vector $(\log \sigma_1, \log \sigma_2, ..., \log \sigma_n)^T$, which are unconstrained for $\sigma_i \in (0, \infty)\  \forall i$.
 
-If we want to sample $z$ from $\mathcal{N}(\mu, \Sigma)$, we have another problem.
+If we want to sample $\mathbf{z}$ from $\mathcal{N}(\mu, \Sigma)$, we have another problem.
 How can we backpropagate through the sampling process?
 The answer is using the reparametrization trick.
-Instead of sampling from $\mathcal{N}(\mu, \Sigma)$, we sample instead $\epsilon$ from the standard normal $N(\mathbf{0}, \mathcal{I})$.
+Instead of sampling from $\mathcal{N}(\mu, \Sigma)$, we sample instead $\mathbf{\epsilon}$ from the standard normal $N(\mathbf{0}, \mathcal{I})$.
 Then we perform the following operations to get $\mathbf{z}$:
 
 $$
-\mathbf{z} := \epsilon \odot \mathbf{\sigma} + \mathbf{\mu}
+\mathbf{z} := \mathbf{\epsilon} \odot \mathbf{\sigma} + \mathbf{\mu}
 $$
 
-where $\sigma = (\sigma_1, \sigma_2, ..., \sigma_n)^T$ can be obtained by exponentiating the outputs of the encoder, $(\log \sigma_1, \log \sigma_2, ..., \log \sigma_3)^T$, and $\epsilon \sim \mathcal{N}(0, \mathcal{I})$.
+where $\mathbf{\sigma} = (\sigma_1, \sigma_2, ..., \sigma_n)^T$ can be obtained by exponentiating the outputs of the encoder, $(\log \sigma_1, \log \sigma_2, ..., \log \sigma_3)^T$, and $\epsilon \sim \mathcal{N}(0, \mathcal{I})$.
 Now we can find the partial derivatives of $\mathbf{z}$ w.r.t $\sigma$ and $\mu$, and therefore can backpropagate through the sampling step.
-Without going into too much detail about how to calculate the $D_{KL}(q_\phi(z|x) || p(z))$, we can find that:
+Without going into too much detail about how to calculate the $D_{KL}(q_\phi(\mathbf{z}|\mathbf{x}) || p(\mathbf{z}))$, we can find that:
 
 $$
-D_{KL}(q_\phi(z|x) || p(z)) = \frac{1}{2} \sum_{i=1}^{n} - \log \sigma_i^2 - 1 + \sigma_i^2 + \mu_i
+D_{KL}(q_\phi(\mathbf{z}|\mathbf{x}) || p(\mathbf{z})) = \frac{1}{2} \sum_{i=1}^{n} - \log \sigma_i^2 - 1 + \sigma_i^2 + \mu_i
 $$
 
-Next we want to take a look at how we can obtain $p_\theta(x\|z)$ from the decoder network.
+Next we want to take a look at how we can obtain $p_\theta(\mathbf{x}\|\mathbf{z})$ from the decoder network.
 The decoder maps from $\mathbf{z}$ to $\mathbf{\hat{x}}$.
 Once we get $\mathbf{\hat{x}}$, we need to make some assumptions to calculate the reconstruction loss.
 If we make the assumption that $p(\mathbf{x}|\mathbf{\hat{x}})$ is normally distributed, then we get a MSE reconstruction loss.
 
 $$
--E_Q[\log p_\theta(x|z)] = \frac{1}{n} \sum_{i=1}^n (x_i - \hat{x}_i) ^ 2
+-E_Q[\log p_\theta(\mathbf{x}|\mathbf{z})] = \frac{1}{n} \sum_{i=1}^n (x_i - \hat{x}_i) ^ 2
 $$
 
 Sometimes we may also choose to use a different loss, such as binary cross entropy, depending on our assumptions and what range the input data falls in.
