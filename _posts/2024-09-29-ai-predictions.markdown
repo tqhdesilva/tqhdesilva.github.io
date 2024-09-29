@@ -12,7 +12,7 @@ These are 'strong convictions, weakly held'.
 
 # Predictions
 1. LLMs will not be a useful basis for AGI.
-    - [Yann Lecun's statement}(https://www.youtube.com/watch?v=5t1vTLU7s40): "LLMs can do none of those or they can only do them in a very primitive way, and they don’t really understand the physical world. As a pass towards human-level intelligence, they’re missing essential components."
+    - [Yann Lecun's statement](https://www.youtube.com/watch?v=5t1vTLU7s40): "LLMs can do none of those or they can only do them in a very primitive way, and they don’t really understand the physical world. As a pass towards human-level intelligence, they’re missing essential components."
 2. The main family of use cases for LLM will be as a new interface for interacting with computing.
     - ["You now have a computer that will do what you tell it to do"](https://x.com/Carnage4Life/status/1761483377365152234).
     - Some aspects of computing will become more democratized, as was the case with GUIs.
