@@ -6,7 +6,6 @@ categories: theory NTK
 mathjax: true
 ---
 
-{% raw %}
 # Neural Tangent Kernel [^2]
 
 Training neural networks using gradient descent is equivalent to kernel gradient descent. In addition, in the infinite width limit there is a constant, deterministic, limiting kernel.
@@ -40,18 +39,18 @@ In kernel regression, instead of using gradient descent by updating the paramete
 Consider a cost function in the dual space $C \in \mathcal{H}_K^*: \mathcal{H}_K \rightarrow \mathbb{R}$.
 Then $C \circ f$ is analagous to the loss function, evaluating $f$ over the finite dataset $x_1, \ldots, x_n \in \mathbb{R}^{n_0}$.
 
-<!-- The kernel gradient for kernel $K$ is written $\nabla_K C$ and defines a mapping $\mathcal{H}_K^* \rightarrow \mathcal{H}_K$. Evaluated at a function $f_0$, we are actually evaluating $\nabla_K C \vert_{f_0} = \Phi_K(\partial_{f}^{in} C\vert_{f_0})$ where $\partial_{f}^{in} C$ is the functional derivative of $C$ w.r.t $f$. -->
+The kernel gradient for kernel $K$ is written $\nabla_K C$ and defines a mapping `$\mathcal{H}_K^* \rightarrow \mathcal{H}_K$`. Evaluated at a function $f_0$, we are actually evaluating $\nabla_K C \vert_{f_0} = \Phi_K(\partial_{f}^{in} C\vert_{f_0})$ where $\partial_{f}^{in} C$ is the functional derivative of $C$ w.r.t $f$.
 
-<!-- Note that $\partial_{f}^{in} C\vert_{f_0} \in \mathcal{H}_K^*$, so we can define it using an element of $\mathcal{H}_K$ as follows: $\partial_{f}^{in} C\vert_{f_0} = \langle d_{f_0}, \cdot \rangle_{in}$. 
+Note that `$\partial_{f}^{in} C\vert_{f_0} \in \mathcal{H}_K^*$`, so we can define it using an element of `$\mathcal{H}_K$` as follows: $\partial_{f}^{in} C\vert_{f_0} = \langle d_{f_0}, \cdot \rangle_{in}$. 
 $\Phi_K$ is defined so that $\Phi_K(\partial_{f}^{in} C\vert_{f_0}) = E_{x \sim {in}}[K(x, \cdot) d_{f_0}(\cdot)]$
-Since we are working with the empirical distribution, we have the definition of our functional derivative $\nabla_K C \vert_{f_0} \in \mathcal{H}_K$: -->
+Since we are working with the empirical distribution, we have the definition of our functional derivative $\nabla_K C \vert_{f_0} \in \mathcal{H}_K$:
 
 $$
 \nabla_K C \vert_{f_0} \in \mathcal{H}_K = \frac{1}{N} \sum_{i = 1}^N K(\cdot, x_i) d\vert_{f_0} (x_i)
 $$
 
 Quick notation comment, ${in}$ script refers to the input distribution, which is the empirical distribution defined by our training dataset.
-$\langle f, g\rangle_{in}$ denotes $\mathbb{E}_{x \sim {in}}[f(x)g(x)^T] = \frac{1}{N} \sum_{i = 1}^N f(x_i) g(x_i)^T$.
+$\langle f, g\rangle_{in}$ denotes `$\mathbb{E}_{x \sim {in}}[f(x)g(x)^T] = \frac{1}{N} \sum_{i = 1}^N f(x_i) g(x_i)^T$`.
 
 If we follow the updating rule above, we have the following training dynamics
 $$
@@ -71,7 +70,6 @@ In case (2), there is some additional machinery needed using Gaussian processes 
 There are more thorough explanation available elsewhere [^2] [^3].
 
 
-{% endraw %}
 
 ## References
 [^1]: [Fourier Features Let Networks Learn High Frequency Functions in Low Dimensional Domains](https://arxiv.org/pdf/2006.10739)
