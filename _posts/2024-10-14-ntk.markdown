@@ -57,7 +57,7 @@ $$
 \partial_t f(t) = - \nabla_K C \vert_{f_t}
 $$
 
-# Equivalence with SGD and Limiting Kernel
+# Equivalence with Gradient Descent and Limiting Kernel
 The original paper demonstrates the training dynamics are identical for both gradient descent and kernel descent in the 2 cases:
 1. Random function approximation (random function basis)
     $$\tilde{K} = \frac{1}{P} \sum_{p = 1}{P} f^{(p)} \otimes f^{(p)}$$
