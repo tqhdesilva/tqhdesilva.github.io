@@ -23,7 +23,7 @@ There are two key points:
 Consider a function $f$ which can be defined in terms of the weighted sum of various kernels centered at different locations $x_i$, where $x_1, x_2, \ldots$ are the input features of our dataset:
 
 $$
-f(x) = \sum_i K(x^{(i)}, x) \alpha^{(i)}
+f(x) = \sum_i K(x^{(i)}, x) \alpha^{(i)}(x_i)
 $$
 
 The input dimension is $n_0$, and $n_l$ is the output of the final layer.
