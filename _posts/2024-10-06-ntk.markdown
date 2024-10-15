@@ -10,21 +10,6 @@ There are two key points:
 2. There is a limiting kernel as the number of parameters $P \rightarrow \infty$ (in the case of random linear functions), $n_1, n_2, \ldots, n_l \rightarrow \infty$ in the case of a deep neural network with Lipschitz activation $\sigma$ and $l$ layers.
 
 
-<!--
-- Kernel gradient descent and gradient descent are equivalent.
-    - Show $\partial_t f_{\theta(t)}  = - \nabla_{\tilde{K}} C |_{f_{\theta(t)}}$.
-- In the random function approximation setting, where the prediction function is a sum of randomly selected functions weighted by the optimized params $\theta$, there is a limiting kernel as $P \rightarrow \infty$.
-    - The kernel does not depend on the values of $\theta$ at all, just $f^{(l)}$ the random basis functions.
-        $$
-        \tilde{K}(x, x') = \frac{1}{P} \sum_{p=1}^{P} f^{(p)} (x)\otimes f^{(p)}(x')
-        $$
-        $\lim_{P \rightarrow \infty} \tilde{K} = K$ by LLN.
-    
-- In the case of deep neural networks with some Lipschitz activation function, the kernel function does depend on the values of the parameters $\theta$, activations, and initialization.
-    - We must show
--->
-
-
 ## Kernel Regression
 Consider a function $f$ which can be defined in terms of the weighted sum of various kernels centered at different locations $x_i$, where $x_1, x_2, \ldots$ are the input features of our dataset:
 
@@ -43,7 +28,6 @@ Such a function $f$ is said to be an element of a Reproducing Hilbert Kernel Spa
 ## Kernel Gradient
 In kernel regression, instead of using gradient descent by updating the parameters using their partial derivatives $\theta_{t + 1} = \theta_t - \eta \nabla_\theta L(x, y; \theta_t, f)$, we instead take steps in the function space $f_{t + 1} = f_t - \eta \nabla_K C|_{f_t}$, independent of how we parametrize the function $f$ where $C$ is a convext cost function. The functional gradient is depending on the cost function $C$, the kernel $K$, and the function $f_t$.
 
-
 Consider a cost function in the dual space $C \in \mathcal{H}_K^*: \mathcal{H}_K \rightarrow \mathbb{R}$.
 Then $C \circ f$ is analagous to the loss function, evaluating $f$ over the finite dataset $x_1, \ldots, x_n \in \mathbb{R}^{n_0}$.
 
@@ -51,10 +35,39 @@ The kernel gradient for kernel $K$ is written $\nabla_K C$ and defines a mapping
 Evaluated at a function $f_0$, we are actually evaluating $\nabla_K C |_{f_0} = \Phi_K(\partial_{f}^{in} C|_{f_0})$ where $\partial_{f}^{in} C$ is the functional derivative of $C$ w/r/t $f$.
 Note that $\partial_{f}^{in} C|_{f_0} \in \mathcal{H}_K^*$, so we can define it using an element of $\mathcal{H}_K$ as follows: $\partial_{f}^{in} C|_{f_0} = <d_{f_0}, \cdot >_{in}$. 
 $\Phi_K$ is defined so that $\Phi_K(\partial_{f}^{in} C|_{f_0}) = E_{x \sim in}[K(x, \cdot) d_{f_0}(\cdot)]$
+Since we are working with the empirical distribution, we have the definition of our functional derivative $\nabla_K C |_{f_0} \in \mathcal{H}_K$:
+
+$$
+\nabla_K C |_{f_0} \in \mathcal{H}_K = \frac{1}{N} \sum_{i = 1}^N K(\cdot, x_i) d|_{f_0} (x_i)
+$$
+
+
 
 Quick notation comment, $in$ script refers to the input distribution, which is the empirical distribution defined by our training dataset.
 $<f, g>_{in}$ denotes $\mathbb{E}_{x \sim {in}}[f(x)g(x)^T] = \frac{1}{N} \sum_{i = 1}^N f(x_i) g(x_i)^T$.
 
+If we follow the updating rule above, we have the following training dynamics
+
+$$
+\partial_t f(t) = - \nabla_K C |_{f_t}
+$$
+
+
+# Equivalence with SGD and Limiting Kernel
+The original paper demonstrates the training dynamics are identical for both gradient descent and kernel descent in the 2 cases:
+1. Random function approximation (random function basis)
+    $$\tilde{K} = \frac{1}{P} \sum_{p = 1}{P} f^{(p)} \otimes f^{(p)}$$
+2. Deep learning case with Lipschitz activation. The kernel in this case is the eponymous neural tangent kernel (NTK). Here $L$ is the total layers.
+    $$\Theta^{(L)}(\theta) = \sum_{p = 1}^P \partial_{\theta_p} F^{(L)}(\theta) \otimes \partial_{\theta_p} F^{(L)}(\theta) $$
+
+The equivalence of kernel gradient descent follows from the definitions.
+The second part, to prove that there is a constant limiting kernel follows from LLN in the case of (1).
+In case (2), there is some additional machinery needed using Gaussian processes applied to neural networks to show that this kernel is constant in the case $P \rightarrow \infty$.
+There are more thorough explanation available elsewhere [^2] [^3].
+
+
+
 ## References
 [^1]: [Fourier Features Let Networks Learn High Frequency Functions in Low Dimensional Domains](https://arxiv.org/pdf/2006.10739)
 [^2]: [Neural Tangent Kernel: Convergence and Generalization in Neural Networks](https://arxiv.org/pdf/1806.07572)
+[^3]: [Some Math behind Neural Tangent Kernel](https://lilianweng.github.io/posts/2022-09-08-ntk/#kernel--kernel-methods)
