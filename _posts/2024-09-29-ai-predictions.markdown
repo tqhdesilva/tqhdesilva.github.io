@@ -1,7 +1,7 @@
 ---
 layout: post
 title:  "2024 AI Predictions"
-date:   2021-09-30 07:00:00 -0700
+date:   2024-09-30 07:00:00 -0700
 categories: general
 mathjax: true
 ---
