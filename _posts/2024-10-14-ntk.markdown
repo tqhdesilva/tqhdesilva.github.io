@@ -21,12 +21,12 @@ There are two key points:
 Consider a function $f$ which can be defined in terms of the weighted sum of various kernels centered at different locations $x_i$, where $x_1, x_2, \ldots$ are the input features of our dataset:
 
 $$
-f(x) = \sum_i K(x^{(i)}, x) \alpha^{(i)}(x_i)
+f(x) = \sum_i K(x^{(i)}, x) \alpha(x^{(i)})
 $$
 
 The input dimension is $n_0$, and $n_l$ is the output of the final layer.
 
-$f: \mathbb{R}^{n_0} \rightarrow \mathbb{R}^{n_l}$, $K: \mathbb{R}^{n_0} \times \mathbb{R}^{n_0} \rightarrow \mathbb{R}^{n_l} \times \mathbb{R}^{n_l}$, $\alpha_i \in \mathbb{R}^{n_l}$
+$f, \alpha: \mathbb{R}^{n_0} \rightarrow \mathbb{R}^{n_l}$, $K: \mathbb{R}^{n_0} \times \mathbb{R}^{n_0} \rightarrow \mathbb{R}^{n_l} \times \mathbb{R}^{n_l}$
 
 
 Such a function $f$ is said to be an element of a Reproducing Hilbert Kernel Space (RKHS) $\mathcal{H}_K$.
