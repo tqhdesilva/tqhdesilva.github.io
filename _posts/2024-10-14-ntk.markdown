@@ -6,7 +6,6 @@ categories: theory NTK
 mathjax: true
 ---
 
-# Neural Tangent Kernel [^2]
 
 Training neural networks using gradient descent is equivalent to kernel gradient descent. In addition, in the infinite width limit there is a constant, deterministic, limiting kernel.
 
@@ -60,8 +59,8 @@ $$
 # Equivalence with Gradient Descent and Limiting Kernel
 The original paper demonstrates the training dynamics are identical for both gradient descent and kernel descent in the 2 cases:
 1. Random function approximation (random function basis)
-    $$\tilde{K} = \frac{1}{P} \sum_{p = 1}{P} f^{(p)} \otimes f^{(p)}$$
-2. Deep learning case with Lipschitz activation. The kernel in this case is the eponymous neural tangent kernel (NTK). Here $L$ is the total layers.
+    $$\tilde{K} = \frac{1}{P} \sum_{p = 1}^{P} f^{(p)} \otimes f^{(p)}$$
+2. Deep learning case with Lipschitz activation and $L$ layer neural network. The kernel in this case is the eponymous neural tangent kernel (NTK).
     $$\Theta^{(L)}(\theta) = \sum_{p = 1}^P \partial_{\theta_p} F^{(L)}(\theta) \otimes \partial_{\theta_p} F^{(L)}(\theta) $$
 
 The equivalence of kernel gradient descent follows from the definitions.
