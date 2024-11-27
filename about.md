@@ -6,4 +6,4 @@ permalink: /about/
 
 Machine Learning Engineer.
 
-Interested in computer vision, spatial computing, differentiable rendering, sciml, and geometric deep learning.
+I currently work in ads ranking. But I have a lot of different interests such as computer vision, scientific machine learning, neural representations.
