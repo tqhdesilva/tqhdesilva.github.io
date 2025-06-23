@@ -1,0 +1,74 @@
+# WAYR 2025-06-22
+This week I'm reviewing and learning about common families of archs used in CV deep learning modeling.
+Specifically, I'm curious if the industry has moved completely to ViT or if ConvNet is also viable, and if so when.
+
+
+## Comparing ViT and ConvNet
+### [An Image Is Worth 16X16 Words: Transformers For Image Recognition At Scale](https://arxiv.org/abs/2010.11929)
+- Outperforms ConvNets (ResNet-BiT) when scaling to larger number of training samples, but not on smaller datasets (e.g. ImageNet).
+- Experiments are for image classifications tasks, ignores tasks such as detection and segmentation.
+- Training efficiency is much better with respect to compute is much better (up to 4x) vs ResNet-BiT.
+- Attributes good performance to being able to utilize global information (as opposed to the inductive bias of ConvNet archs to utilize local information)
+- Kicked off ViT 'revolution', where many subsequent CV models such as DINOv2, CLIP, I/V-JEPA, SAM, etc. use this arch.
+
+
+### [ConvNet vs. Vision Transformer: A Practitioner's Guide to Selecting the Right Model](https://tobiasvanderwerff.com/2024/05/15/cnn-vs-vit.html#summary-and-recommendations)
+- Generally recommends to use ViT, especially since ViT models have strong transfer to new tasks and there are many available open weights models.
+- ViT scales much better with compute and data, and also generalizes better. However lots of data is needed to compensate for having less inductive biases than ConvNet.
+- Use ConvNet whenever there is less training data available and there is no available ViT weights pre-trained on a similar distribution.
+    - ViT paper also acknowledged that in small training data regime (e.g. ImagNet-1k scale) ConvNet based archs can excel.
+    - Also use ConvNet for dense prediction (e.g. segmentation)
+        - I would caveat the author's recommendation that sometimes ViT is used as an encoder in some dense prediction archs (e.g. SAM) so it can still be useful to learn representations of image data for these tasks.
+- Caveat: most of this applies to previous ConvNet archs (e.g. ResNet-BiT that is mentioned in the ViT paper), but there is less certainty about new ConvNet based archs such as ConvNeXt (the next paper we read).
+
+
+
+### [A ConvNet for the 2020s](https://arxiv.org/abs/2201.03545)
+- Calls out Swin transformers specifically as a key milestone in ViT development, enabling a more general usage of ViT as backbone for various models.
+    - Swin transformer is a type of hierarchical transformer that seems to re-introduce some inductive biases from ConvNet.
+- Motivation for this paper is that ViT research seems to be converging back to similar solutions to ConvNets, but practitioners are hesitant to adopt ConvNets since ViT archs have much better scaling on large datasets.
+- Rough summary of improvements approach: take techniques from recent ConvNets (e.g. Mobilenet) and recent Transformers (Swin Transformer)
+- Modernize ConvNets starting from a ResNet arch:
+    - common sense modernizations to make the comparison more fair:
+        - modernize optimizer with AdamW
+        - extend training
+        - modernized data augmentation
+    - macro design
+        - adjust compute ratio (how the computation complexity is distributed along depth, where depth is related to the receptive field of the features at that layer) to match better what is in Swin transformer
+        - add patchify stem to the early layers, which kind of imitates patchifying operation in ViT
+            - non-overlapping convolutions
+            - kind of interesting how this patchify convolution is very similar to MLP projection used in ViT
+    - ResNeXtify
+        - take some improvements from ResNeXt (presumably where the name ConvNeXt comes from)
+        - increase width (num channels) by doing something similar to grouped convolution (each output channel only is convolving a subset of input channels) by doing the following
+            - depth-wise convolution (1d conv per output channel that takes a corresponding input channel) & 1x1 conv
+                - somehow this corresponds to some properties in ViT (separation of information mixing in spatial and channel dimension)
+    - reverse bottleneck
+        - technique from MobilNetV2 (actually a lot of other techniques are also mentioned as coming from MobileNetV2), which is to upsample in channels before downsampling
+        - also corresponds inverse bottleneck in Transformers MLP layers
+    - increase the kernel size to 7x7
+        - also re-order depth wise conv and 1x1 kernel to save compute
+        - 7x7 corresponds to Swin Transformer window size
+    - micro design
+        - ReLU -> GeLU
+        - BN -> LN
+- measured better FLOPS/throughput when scaling resolution than Swin
+- On par for ImageNet-22k (previously ConvNet only better for ImageNet-1k) which shows that fro large dataset pretraining ConvNets are competitive.
+- I would like to see more results on JFT-300M, as the original ViT paper also claimed on par performance after fine-tuning Imagnet-21k, but only much better performance after pre-training on JFT-300M.
+
+
+
+
+## Thoughts
+- ViT doesn't seem viable for very high resolution (or high number of patches) due to quadratic scaling, though this doesn't seem to cause problems for tasks like ImagNet classification.
+- ViT and ConvNets seem to be converging.
+    - ViT is gaining some inductive bias to improve the performance.
+    - ConvNet is gaining layers that look a lot like attention, for instance dynamic depth-wise conv is equivalent to local Transformer attention.
+- Hybrid models are being devloped and further explored (starting from original ViT paper).
+
+
+
+
+## Read Next
+- [Swin Transformer: Hierarchical Vision Transformer using Shifted Windows](https://arxiv.org/abs/2103.14030)
+- [An Impartial Take to the ConvNet vs Transformer Robustness Contest](https://arxiv.org/abs/2207.11347)
