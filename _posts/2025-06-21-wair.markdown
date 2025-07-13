@@ -1,13 +1,13 @@
 ---
 layout: post
-title:  "WAYR 2025-06-22"
+title:  "WAIR 2025-06-22"
 date:   2025-06-22 21:00:00 -0700
-categories: wayr
+categories: wair
 mathjax: false
 ---
 
 
-# WAYR 2025-06-22
+# 2025-06-22 What am I Reading? 
 This week I'm reviewing and learning about common families of archs used in CV deep learning modeling.
 Specifically, I'm curious if the industry has moved completely to ViT or if ConvNet is also viable, and if so when.
 
