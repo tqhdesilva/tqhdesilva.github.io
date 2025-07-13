@@ -17,7 +17,7 @@ Continuing from the last WAIR, I wanted to take a look at how ViTs can be extend
 - Swin = **S**hifted **Win**dow
     - Localized self attention within a window partition
     - Successive window partitions are shifted, which allows for connecting features
-- Advantages in computational complexity vs the sliding window, and also vs traditional ViT (as mentioned above ViT is typically quadratic)A
+- Advantages in computational complexity vs the sliding window, and also vs traditional ViT (as mentioned above ViT is typically quadratic).
 - Enables dense prediction by adding FPN (Feature Pyramidal Network) on the hierarchical features from each stage of Swin network.
 - Has some neat tricks to optimize training/inference on the shifted windows, when the windows can be varying in shape.
     - Uses masking.
