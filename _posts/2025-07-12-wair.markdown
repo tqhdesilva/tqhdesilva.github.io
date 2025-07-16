@@ -29,12 +29,12 @@ Continuing from the last WAIR, I wanted to take a look at how ViTs can be extend
 - Diffusion models use both a (fixed) forward discrete Markov process and reverse (learned) Markov process.
 - The forward process conditional distributions (denoted $q$) are chosen to converge to $x_T \rightarrow \mathbf{N}(0, 1)$.
 - Instead of optimizing against the intractable negative log likelihood loss $- \log p_\theta(x)$ optimize against the ELBO $\log \frac{q(x_{1:T}\vert x_0)}{p_\theta(x_{0:T})} \geq - \log p_\theta(x)$
-- By making certain choices of how to parametrize $p_\theta$ and knowing some properties of the forward process corresponding to $q$, we eventually have a loss to minimize $\mathbb{E}_{t, x_0, \epsilon} [\Vert \mathbf{\epsilon} -  \mathbf{\epsilon}_\theta (\sqrt{\bar{\alpha}_t} \mathbf{x}_0 + \sqrt{1 - \bar{\alpha_t}} \mathbf{\epsilon}, t)\Vert]$
+- By making certain choices of how to parametrize $p_\theta$ and knowing some properties of the forward process corresponding to $q$, we eventually have a loss to minimize $$\mathbb{E}_{t, x_0, \epsilon} \Vert \mathbf{\epsilon} -  \mathbf{\epsilon}_\theta (\sqrt{\bar{\alpha}_t} \mathbf{x}_0 + \sqrt{1 - \bar{\alpha_t}} \mathbf{\epsilon}, t)\Vert $$
     - $\mathbf{\epsilon}_\theta$ function approximator (i.e. our neural net) that approximates $\mathbf{\epsilon}$
     - $\bar{\alpha}_t$ depends only on $t$ and the noise schedule of the forward process, which is fixed.
     - $t$ is sampled, and there is normally a weighting term based on $t$ (which is dropped in this equation)
     - equivalent to Langevin dynamics, resembles denoising score matching.
 - Inference needs to step through all the iterations of the backward process, adding some small noise $\mathbf{z}$ each step.
-    - $\mathbf{x}_{t - 1} = \frac{1}{\sqrt{\alpha_t}}( \mathbf{x}_t - \frac{1 - \alpha_t}{\sqrt{1 - \bar{\alpha_t}}} \mathbf{\epsilon}_\theta(\mathbf{x}_t, t)) + \sigma_t \mathbf{z}$
+    - $$\mathbf{x}_{t - 1} = \frac{1}{\sqrt{\alpha_t}}( \mathbf{x}_t - \frac{1 - \alpha_t}{\sqrt{1 - \bar{\alpha_t}}} \mathbf{\epsilon}_\theta(\mathbf{x}_t, t)) + \sigma_t \mathbf{z}$$
     - $\sigma_t^2 = \beta_t$ is the choice of parametrization for variance of the reverse process distribution.
 
