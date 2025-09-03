@@ -34,7 +34,7 @@ X_t &= \psi_t(x_0) \\
 X_0 &= x_0 \\
 X_0 &= \psi_0(x_0) \\
 \frac{dX_t}{dt} &= u_t(X_t) \\ 
-\frac{d}{dt} \psi_t(x_0) &= u_t(X_t) = \psi_t(\psi_t(x_0))
+\frac{d}{dt} \psi_t(x_0) &= u_t(X_t) = u_t(\psi_t(x_0))
 \end{aligned}
 $$
 
@@ -91,14 +91,14 @@ However, it can be show that
 
 $$
 \begin{aligned}
-&\mathcal{L}_\text{CFM} := \mathbb{E}_{t \sim U[0,1], z \sim p_\text{data}} \lbrack \Vert u_t^\theta(x|z) - u_t^\text{target}(x|z) \Vert^2 \rbrack \\ 
-&\mathcal{L}_\text{FM} = \mathcal{L}_\text{CFM} + C
+&\mathcal{L}_\text{CFM}(\theta) := \mathbb{E}_{t \sim U[0,1], z \sim p_\text{data}} \lbrack \Vert u_t^\theta(x|z) - u_t^\text{target}(x|z) \Vert^2 \rbrack \\ 
+&\mathcal{L}_\text{FM}(\theta) = \mathcal{L}_\text{CFM}(\theta) + C
 \end{aligned}
 $$
 
 For some $C$ that doesn't depend on $\theta$.
 
-Then $\nabla \mathcal{L}_\text{FM} = \nabla \mathcal{L} _ \text{CFM}$ and we can consider this the same minimization problem as the marginal case.
+Then $\nabla \mathcal{L}_\text{FM}(\theta) = \nabla \mathcal{L} _ \text{CFM}(\theta)$ and we can consider this the same minimization problem as the marginal case.
 
 Once we have a learned $u_t^\theta$, inference is straightforward.
 Sample $x_0 \sim p_\text{init}$, and solve the ODE.
@@ -138,7 +138,7 @@ $$
 \mathcal{L}_{SM}(\theta) &= \mathbb{E}_{t \sim U[0,1], z \sim p_\text{data}, x \sim p_t(\cdot | z)} \lbrack \Vert s_t^\theta(x) - \nabla \log p_t(x) \Vert^2 \rbrack \\
 \mathcal{L}_{CSM}(\theta) &= \mathbb{E}_{t \sim U[0,1], z \sim p_\text{data}, x \sim p_t(\cdot | z)} \lbrack \Vert s_t^\theta(x) - \nabla \log p_t(x|z) \Vert^2 \rbrack \\
 \mathcal{L}_\text{SM}(\theta) &= \mathcal{L}_\text{CSM}(\theta) + C \\ 
-\nabla \mathcal{L}_\text{SM} &= \mathcal{L}_\text{CSM}
+\nabla \mathcal{L}_\text{SM}(\theta) &= \nabla \mathcal{L}_\text{CSM}(\theta)
 \end{aligned}
 $$
 
