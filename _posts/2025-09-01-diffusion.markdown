@@ -51,7 +51,7 @@ In the case of Gaussian probability path, we define the conditional probability 
 
 $$
 \begin{aligned}
-p_t(x | z) &= \mathcal{N}(\alpha_t z, \beta_t^2) \\
+p_t(x | z) &= \mathcal{N}(\alpha_t z, \beta_t^2 I_d) \\
 x &= a_t z + \beta_t \epsilon \qquad s.t. \quad \epsilon \sim N(\mathbb{0}, I_d) \\
 \alpha_0 &= \beta_1 = 0 \\
 \alpha_1 &= \beta_0 = 1
