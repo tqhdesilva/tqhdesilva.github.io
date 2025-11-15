@@ -35,8 +35,7 @@ $$
 \mathcal{L}_\text{CSM}(\theta) = \mathbf{E}_{t \sim \text{Unif}, z \sim p_\text{data}, x \sim p_t(\cdot | z)} \| s_t^\theta (x) - \nabla \log p_t (x | z) \|^2
 $$
 
-
-In both cases the target, either $u_t^\text{target}(x \| z)$ or $\nabla \log p_t(x \| z)$ are determined by the probability path.
+In both cases the target, either $u_t^\text{target}(x \| z)$ or $\nabla \log p_t(x \| z)$ are determined by the probability path. Additionally the sampling $x \sim p_t(\cdot \| z)$ is determined by choice of probability path.
 
 
 ## Intuition about the forward process
