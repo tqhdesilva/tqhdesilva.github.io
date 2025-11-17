@@ -156,7 +156,7 @@ To summarize, the loss in VAE training is the negative ELBO loss, and the ELBO l
 
 Now that we understand the components of the loss, we can see that there are three distributions that need to be determined to calculate the loss: the likelihood $p_\phi(\mathbf{x}|\mathbf{z})$, the prior $p(\mathbf{x})$, and the variational posterior $q(\mathbf{z}|\mathbf{x})$.
 We've already alluded to the fact that the encoder network determines $q_\phi(\mathbf{z}|\mathbf{x})$ and the decoder network determines $p_\theta(\mathbf{x}|\mathbf{z})$.
-For $p(\mathbf{x})$, the prior, we generally use a standard multivariate normal, i.e. $\mathcal{N}(\mathbf{0}, \mathcal{I})$.
+For $p(\mathbf{z})$, the prior, we generally use a standard multivariate normal, i.e. $\mathcal{N}(\mathbf{0}, \mathcal{I})$.
 With these components, it is possible to calculate the loss.
 
 Let's examine how the encoder determines the distribution $q_\phi(\mathbf{z}|\mathbf{x})$.
