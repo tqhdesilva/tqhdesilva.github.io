@@ -26,7 +26,7 @@ I was partially inspired by [nanochat](https://github.com/karpathy/nanochat), sp
 The purpose of this project was to experiment with training conditional flow-matching models from scratch on a "hobbyist budget".
 My requirements were:
 
-- Cheap enough to experiment locally, or on a small budget. I initially planned for about `$100` in GPU compute, but the final ImageNet-256 lineage cost `$210.45` at `$3.30/H100-hour`. The models leading up to that were much cheaper. Most earlier stages were trained locally on a consumer GPU (16GB VRAM) or my MacBook Pro GPU (M4 Pro).
+- Cheap enough to experiment locally, or on a small budget. I initially planned for about `$100` in GPU compute, but the final ImageNet-256 model cost `$210.45` at `$3.30/H100-hour`. The models leading up to that were much cheaper. Most earlier stages were trained locally on a consumer GPU (16GB VRAM) or my MacBook Pro GPU (M4 Pro).
 - Demonstrate how to do post-training with a simple reward function (via Flow-GRPO).
 - Minimal dependencies. Writing from scratch, and being able to read all of the code in a single codebase, are better for learning. I did end up importing diffusers, but only to use a pre-trained VAE for Latent Diffusion Model (LDM) training. Other dependencies are mainly for training infrastructure.
 - Provide a visual demonstration of how scaling up flow-matching models can allow for modeling more complex distributions, mostly through higher resolution and more semantic classes.
@@ -405,7 +405,7 @@ Additionally, we would have liked to run some FID evals just to get an objective
 - Model: H1024 D20 E16 c2 moew0.5 deferred-masking DiT.
 - Total parameters: 695.1M.
 - Token-average active parameters: 314.0M.
-- Final-best lineage compute estimate: 240 masked epochs × 1,281,167 images × 86.72G train FLOPs/image + 40 unmasked epochs × 1,281,167 images × 284.86G train FLOPs/image ≈ 41.3 EFLOPs.
+- Final-best model compute estimate: 240 masked epochs × 1,281,167 images × 86.72G train FLOPs/image + 40 unmasked epochs × 1,281,167 images × 284.86G train FLOPs/image ≈ 41.3 EFLOPs.
 - Runtime: 63.7714 H100-hours.
 - Cost at USD `$3.30/hr`: USD `$210.45`.
 
@@ -416,7 +416,7 @@ Budget breakdown & wall time:
   - Masked continuation: 28h13m47s, 28.2297 H100-hours, `$93.16`.
 - Low-LR unmasked fine tuning: 40 epochs at 47.48G MACs/image, or ~284.86G train FLOPs/image.
   - 21h55m54s, 21.9317 H100-hours, `$72.37`.
-- Total final-best lineage: 63h46m17s, 63.7714 H100-hours, `$210.45`.
+- Total final-best model: 63h46m17s, 63.7714 H100-hours, `$210.45`.
 
 Code pointers
 
